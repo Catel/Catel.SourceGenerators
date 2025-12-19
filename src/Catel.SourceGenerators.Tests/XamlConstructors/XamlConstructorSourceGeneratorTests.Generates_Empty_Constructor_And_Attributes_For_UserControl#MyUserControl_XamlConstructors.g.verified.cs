@@ -1,6 +1,7 @@
 ﻿//HintName: MyUserControl_XamlConstructors.g.cs
 using System;
 using System.Runtime.CompilerServices;
+using using Microsoft.Extensions.DependencyInjection;
 using Catel.IoC;
 
 namespace MyNamespace
@@ -9,7 +10,7 @@ namespace MyNamespace
     {
         [CompilerGenerated]
         public MyUserControl()
-            : this(IoCContainer.Provider.GetRequiredService<MyNamespace.ILogger<MyNamespace.MyUserControl>>(), IoCContainer.Provider.GetRequiredService<MyNamespace.IUserControlWrapperService>())
+            : this(IoCContainer.ServiceProvider.GetRequiredService<MyNamespace.ILogger<MyNamespace.MyUserControl>>(), IoCContainer.ServiceProvider.GetRequiredService<MyNamespace.IUserControlWrapperService>())
         {
         }
     }
