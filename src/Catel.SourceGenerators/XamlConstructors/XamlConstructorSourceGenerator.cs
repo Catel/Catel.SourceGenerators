@@ -6,6 +6,7 @@
     using Microsoft.CodeAnalysis.CSharp;
     using Microsoft.CodeAnalysis.CSharp.Syntax;
     using Microsoft.CodeAnalysis.Text;
+    using System.Diagnostics;
 
     [Generator]
     public class XamlConstructorSourceGenerator : IIncrementalGenerator
@@ -96,7 +97,7 @@
 
             var info = new XamlConstructorInfo(
                 classDeclarationSyntax.SyntaxTree.FilePath,
-                classSymbol.ContainingNamespace.Name, classSymbol.Name,
+                classSymbol.ContainingNamespace.ToDisplayString(), classSymbol.Name,
                 classConstructor.Parameters.Select(x => x.Type.ToDisplayString()).ToArray());
             return info;
         }
@@ -134,7 +135,25 @@
             sourceBuilder.AppendLine("    }");
             sourceBuilder.AppendLine("}");
 
-            sourceProductionContext.AddSource($"{ctorInfo.ClassName}_XamlConstructors.g.cs", SourceText.From(sourceBuilder.ToString(), Encoding.UTF8));
+//#if DEBUG
+//            if (!Debugger.IsAttached)
+//            {
+//                Debugger.Launch();
+//            }
+//#endif
+
+            var fileName = ctorInfo.FileName;
+            if (!string.IsNullOrWhiteSpace(fileName))
+            {
+                fileName = fileName.Replace(".xaml.", ".");
+                fileName = System.IO.Path.GetFileNameWithoutExtension(fileName);
+            }
+            else
+            {
+                fileName = ctorInfo.ClassName;
+            }
+
+            sourceProductionContext.AddSource($"{fileName}_XamlConstructors.g.cs", SourceText.From(sourceBuilder.ToString(), Encoding.UTF8));
         }
     }
 }
