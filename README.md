@@ -1,0 +1,1 @@
+# Catel.SourceGenerators
