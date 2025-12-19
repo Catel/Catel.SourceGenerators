@@ -9,17 +9,17 @@
     using VerifyNUnit;
 
     [TestFixture]
-    public class XamlConstructorSourceGeneratorTests
+    public partial class XamlConstructorSourceGeneratorTests
     {
         [Test]
         public async Task Generates_Empty_Constructor_And_Attributes_For_UserControl()
         {
-            var driver = BuildDriver();
+            var driver = BuildConstructorWithParametersDriver();
 
             await Verifier.Verify(driver);
         }
 
-        private GeneratorDriver BuildDriver()
+        private GeneratorDriver BuildConstructorWithParametersDriver()
         {
             var userControlSource = @"
 using System.Windows.Controls;
