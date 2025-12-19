@@ -1,7 +1,7 @@
 ﻿//HintName: MyUserControl_XamlConstructors.g.cs
 using System;
 using System.Runtime.CompilerServices;
-using using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Catel.IoC;
 
 namespace MyNamespace

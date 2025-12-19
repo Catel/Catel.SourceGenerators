@@ -123,7 +123,7 @@
             var sourceBuilder = new StringBuilder();
             sourceBuilder.AppendLine("using System;");
             sourceBuilder.AppendLine("using System.Runtime.CompilerServices;");
-            sourceBuilder.AppendLine("using using Microsoft.Extensions.DependencyInjection;");
+            sourceBuilder.AppendLine("using Microsoft.Extensions.DependencyInjection;");
             sourceBuilder.AppendLine("using Catel.IoC;");
             sourceBuilder.AppendLine();
 
