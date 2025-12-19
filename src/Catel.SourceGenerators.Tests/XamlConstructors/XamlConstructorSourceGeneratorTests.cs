@@ -1,16 +1,25 @@
 ﻿namespace Catel.SourceGenerators.Tests.XamlConstructors
 {
     using Catel.SourceGenerators.XamlConstructors;
-    using Microsoft.CodeAnalysis.CSharp.Testing;
-    using Microsoft.CodeAnalysis.Testing;
+    using Microsoft.CodeAnalysis;
+    using Microsoft.CodeAnalysis.CSharp;
     using NUnit.Framework;
+    using System.Linq;
     using System.Threading.Tasks;
+    using VerifyNUnit;
 
     [TestFixture]
     public class XamlConstructorSourceGeneratorTests
     {
         [Test]
         public async Task Generates_Empty_Constructor_And_Attributes_For_UserControl()
+        {
+            var driver = BuildDriver();
+
+            await Verifier.Verify(driver);
+        }
+
+        private GeneratorDriver BuildDriver()
         {
             var userControlSource = @"
 using System.Windows.Controls;
@@ -46,36 +55,16 @@ namespace Catel.IoC
 }
 ";
 
-            var test = new CSharpSourceGeneratorTest<XamlConstructorSourceGenerator, DefaultVerifier>
+            var compilation = CSharpCompilation.Create("name", new[]
             {
-                TestState =
-                {
-                    Sources = { userControlSource, iocContainerSource }
-                }
-            };
+                userControlSource,
+                iocContainerSource
+            }.Select(x => CSharpSyntaxTree.ParseText(x)));
 
-            test.TestState.GeneratedSources.Add(
-                (typeof(XamlConstructorSourceGenerator),
-                "MyUserControl_XamlConstructors.g.cs",
-    @"
-using System;
-using System.Runtime.CompilerServices;
-using Catel.IoC;
+            var generator = new XamlConstructorSourceGenerator();
 
-namespace MyNamespace
-{
-    partial class MyUserControl
-    {
-        [CompilerGenerated]
-        public MyUserControl()
-            : this(IoCContainer.Provider.GetRequiredService<ILogger<MyUserControl>>(), IoCContainer.Provider.GetRequiredService<IUserControlWrapperService>())
-        {
-        }
-    }
-}
-"));
-
-            await test.RunAsync();
+            var driver = CSharpGeneratorDriver.Create(generator);
+            return driver.RunGenerators(compilation);
         }
     }
 }
