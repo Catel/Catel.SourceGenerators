@@ -81,14 +81,23 @@
                 return null;
             }
 
-            var constructors = classSymbol.Constructors.Where(c => c.Parameters.Length > 0).ToArray();
+            // Note: instead of using the *class* to get the ctors, we use the node. This is important since
+            // a partial class may be defined in multiple nodes, and we want to get the ctor defined in this specific node.
+
+            var constructors = classDeclarationSyntax.Members
+                .Where(x => x is ConstructorDeclarationSyntax ctor && ctor.ParameterList.ChildNodes().Any())
+                .ToArray();
             if (constructors.Length == 0 || constructors.Length > 1)
             {
                 return null;
             }
 
-            var info = new XamlConstructorInfo(classSymbol.ContainingNamespace.Name, classSymbol.Name,
-                constructors[0].Parameters.Select(x => x.Type.ToDisplayString()).ToArray());
+            var classConstructor = classSymbol.Constructors.Where(c => c.Parameters.Length > 0).Single();
+
+            var info = new XamlConstructorInfo(
+                classDeclarationSyntax.SyntaxTree.FilePath,
+                classSymbol.ContainingNamespace.Name, classSymbol.Name,
+                classConstructor.Parameters.Select(x => x.Type.ToDisplayString()).ToArray());
             return info;
         }
 

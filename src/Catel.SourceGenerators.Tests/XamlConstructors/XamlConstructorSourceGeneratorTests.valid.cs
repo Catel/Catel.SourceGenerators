@@ -36,6 +36,13 @@ namespace MyNamespace
         }
     }
 
+    public partial class MyUserControl
+    {
+        public void InitializeComponent()
+        {
+        }
+    }
+
     public interface ILogger<T> {}
     public interface IUserControlWrapperService {}
 }
