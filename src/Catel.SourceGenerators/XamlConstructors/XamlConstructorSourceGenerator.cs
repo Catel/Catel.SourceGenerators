@@ -82,11 +82,20 @@
                 return null;
             }
 
+            var emptyClassConstructor = classSymbol.Constructors.FirstOrDefault(x => x.Parameters.Length == 0);
+            if (emptyClassConstructor is not null)
+            {
+                // Has parameterless ctor already
+                return null;
+            }
+
             // Note: instead of using the *class* to get the ctors, we use the node. This is important since
             // a partial class may be defined in multiple nodes, and we want to get the ctor defined in this specific node.
 
             var constructors = classDeclarationSyntax.Members
-                .Where(x => x is ConstructorDeclarationSyntax ctor && ctor.ParameterList.ChildNodes().Any())
+                .Where(x => x is ConstructorDeclarationSyntax ctor)
+                .Select(x => (ConstructorDeclarationSyntax)x)
+                .Where(x => x.ParameterList.ChildNodes().Any())
                 .ToArray();
             if (constructors.Length == 0 || constructors.Length > 1)
             {
