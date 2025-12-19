@@ -1,0 +1,5 @@
+<Project>
+    <PropertyGroup Label="RepositoryTemplate.Nullable.Configuration">
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+</Project>

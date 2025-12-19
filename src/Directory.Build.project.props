@@ -1,0 +1,16 @@
+<Project>
+  <!-- 
+    This file applies to all projects automatically, this file contains all the project specific data
+  -->
+
+  <PropertyGroup>
+    <Authors>Catel</Authors>
+    <PackageProjectUrl>https://github.com/Catel/Catel.SourceGenerators</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/Catel/Catel.SourceGenerators</RepositoryUrl>
+  </PropertyGroup>
+  
+  <Import Project="$(MSBuildProjectDirectory)\..\Directory.Build.nullable.props"
+          Condition="$(RepositoryTemplateIgnoreBuildProjectProps) != 'true' And Exists('$(MSBuildProjectDirectory)\..\Directory.Build.nullable.props')" />
+   
+</Project>
