@@ -1,4 +1,4 @@
-﻿//HintName: MyUserControl_XamlConstructors.g.cs
+﻿//HintName: MyUserControl_UserControlConstructors.g.cs
 using System;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
