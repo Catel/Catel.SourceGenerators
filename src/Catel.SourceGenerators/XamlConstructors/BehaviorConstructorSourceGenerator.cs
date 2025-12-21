@@ -9,14 +9,13 @@
     using System.Diagnostics;
 
     [Generator]
-    public class XamlConstructorSourceGenerator : IIncrementalGenerator
+    public class BehaviorConstructorSourceGenerator : IIncrementalGenerator
     {
         //private bool _isIoCContainerAvailable = false;
 
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             var syntax = context.SyntaxProvider;
-            //syntax.
 
             var compilation = context.CompilationProvider;
 
@@ -27,7 +26,7 @@
             //    return;
             //}
 
-            var constructorsToGenerate = syntax.CreateSyntaxProvider<XamlConstructorInfo?>(
+            var constructorsToGenerate = syntax.CreateSyntaxProvider<BehaviorConstructorInfo?>(
                 predicate: static (s, _) =>
                 {
                     return IsSyntaxTargetForGeneration(s);
@@ -52,7 +51,7 @@
             return true;
         }
 
-        private static XamlConstructorInfo? Transform(GeneratorSyntaxContext context)
+        private static BehaviorConstructorInfo? Transform(GeneratorSyntaxContext context)
         {
             var semanticModel = context.SemanticModel;
             var classDeclarationSyntax = context.Node as ClassDeclarationSyntax;
@@ -62,7 +61,8 @@
             }
 
             var classSymbol = semanticModel.GetDeclaredSymbol(classDeclarationSyntax) as INamedTypeSymbol;
-            if (classSymbol is null)
+            if (classSymbol is null ||
+                classSymbol.IsAbstract)
             {
                 return null;
             }
@@ -71,8 +71,7 @@
             while (baseType is not null)
             {
                 var displayString = baseType.ToDisplayString();
-                if (displayString == "System.Windows.Controls.UserControl" ||
-                    displayString == "System.Windows.Window")
+                if (displayString == "Microsoft.Xaml.Behaviors.Behavior")
                 {
                     break;
                 }
@@ -85,7 +84,7 @@
                 return null;
             }
 
-            var emptyClassConstructor = classSymbol.Constructors.FirstOrDefault(x => x.Parameters.Length == 0);
+            var emptyClassConstructor = classSymbol.Constructors.FirstOrDefault(x => !x.IsStatic && x.Parameters.Length == 0);
             if (emptyClassConstructor is not null)
             {
                 // Has parameterless ctor already
@@ -94,6 +93,11 @@
 
             // Note: instead of using the *class* to get the ctors, we use the node. This is important since
             // a partial class may be defined in multiple nodes, and we want to get the ctor defined in this specific node.
+
+            //if (!Debugger.IsAttached)
+            //{
+            //    Debugger.Launch();
+            //}
 
             var constructors = classDeclarationSyntax.Members
                 .Where(x => x is ConstructorDeclarationSyntax ctor)
@@ -107,21 +111,21 @@
 
             var classConstructor = classSymbol.Constructors.Where(c => c.Parameters.Length > 0).Single();
 
-            var info = new XamlConstructorInfo(
+            var info = new BehaviorConstructorInfo(
                 classDeclarationSyntax.SyntaxTree.FilePath,
                 classSymbol.ContainingNamespace.ToDisplayString(), classSymbol.Name,
                 classConstructor.Parameters.Select(x => x.Type.ToDisplayString()).ToArray());
             return info;
         }
 
-        private static void Execute(SourceProductionContext sourceProductionContext, XamlConstructorInfo? xamlConstructorInfo)
+        private static void Execute(SourceProductionContext sourceProductionContext, BehaviorConstructorInfo? constructorInfo)
         {
-            if (xamlConstructorInfo is null)
+            if (constructorInfo is null)
             {
                 return;
             }
 
-            var ctorInfo = xamlConstructorInfo.Value;
+            var ctorInfo = constructorInfo.Value;
 
             var sourceBuilder = new StringBuilder();
             sourceBuilder.AppendLine("using System;");
@@ -148,12 +152,12 @@
             sourceBuilder.AppendLine("    }");
             sourceBuilder.AppendLine("}");
 
-//#if DEBUG
-//            if (!Debugger.IsAttached)
-//            {
-//                Debugger.Launch();
-//            }
-//#endif
+            //#if DEBUG
+            //            if (!Debugger.IsAttached)
+            //            {
+            //                Debugger.Launch();
+            //            }
+            //#endif
 
             var fileName = ctorInfo.FileName;
             if (!string.IsNullOrWhiteSpace(fileName))
@@ -166,7 +170,7 @@
                 fileName = ctorInfo.ClassName;
             }
 
-            sourceProductionContext.AddSource($"{fileName}_XamlConstructors.g.cs", SourceText.From(sourceBuilder.ToString(), Encoding.UTF8));
+            sourceProductionContext.AddSource($"{fileName}_BehaviorConstructors.g.cs", SourceText.From(sourceBuilder.ToString(), Encoding.UTF8));
         }
     }
 }

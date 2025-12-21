@@ -2,14 +2,14 @@
 {
     using System.Collections.Generic;
 
-    public readonly record struct XamlConstructorInfo
+    public readonly record struct BehaviorConstructorInfo
     {
         public readonly string FileName;
         public readonly string NamespaceName;
         public readonly string ClassName;
         public readonly EquatableArray<string> ParameterTypeNames;
 
-        public XamlConstructorInfo(string fileName, string namespaceName, string className, IReadOnlyList<string> parameterTypeNames)
+        public BehaviorConstructorInfo(string fileName, string namespaceName, string className, IReadOnlyList<string> parameterTypeNames)
         {
             FileName = fileName;
             NamespaceName = namespaceName;

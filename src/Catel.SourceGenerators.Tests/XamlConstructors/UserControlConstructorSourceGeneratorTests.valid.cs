@@ -9,17 +9,17 @@
     using VerifyNUnit;
 
     [TestFixture]
-    public partial class XamlConstructorSourceGeneratorTests
+    public partial class UserControlConstructorSourceGeneratorTests
     {
         [Test]
-        public async Task Generates_Nothing_When_No_Constructors_With_Parameters()
+        public async Task Generates_Empty_Constructor_And_Attributes_For_UserControl()
         {
-            var driver = BuildNoOverloadsDriver();
+            var driver = BuildConstructorWithParametersDriver();
 
             await Verifier.Verify(driver);
         }
 
-        private GeneratorDriver BuildNoOverloadsDriver()
+        private GeneratorDriver BuildConstructorWithParametersDriver()
         {
             var userControlSource = @"
 using System.Windows.Controls;
@@ -29,9 +29,17 @@ namespace MyNamespace
 {
     public partial class MyUserControl : System.Windows.Controls.UserControl
     {
-        public MyUserControl()
+        public MyUserControl(ILogger<MyUserControl> logger, IUserControlWrapperService userControlWrapperService)
+            : base(logger, userControlWrapperService)
         {
             InitializeComponent();
+        }
+    }
+
+    public partial class MyUserControl
+    {
+        public void InitializeComponent()
+        {
         }
     }
 
@@ -60,7 +68,7 @@ namespace Catel.IoC
                 iocContainerSource
             }.Select(x => CSharpSyntaxTree.ParseText(x)));
 
-            var generator = new XamlConstructorSourceGenerator();
+            var generator = new UserControlConstructorSourceGenerator();
 
             var driver = CSharpGeneratorDriver.Create(generator);
             return driver.RunGenerators(compilation);
