@@ -35,7 +35,8 @@
                 transform: static (ctx, _) =>
                 {
                     return Transform(ctx);
-                });
+                })
+                .Where(static m => m is not null);
 
             context.RegisterSourceOutput(constructorsToGenerate,
                 static (spc, source) => Execute(spc, source));
@@ -69,7 +70,9 @@
             var baseType = classSymbol.BaseType;
             while (baseType is not null)
             {
-                if (baseType.ToDisplayString() == "System.Windows.Controls.UserControl")
+                var displayString = baseType.ToDisplayString();
+                if (displayString == "System.Windows.Controls.UserControl" ||
+                    displayString == "System.Windows.Window")
                 {
                     break;
                 }
