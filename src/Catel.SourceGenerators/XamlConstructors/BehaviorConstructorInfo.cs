@@ -16,5 +16,22 @@
             ClassName = className;
             ParameterTypeNames = new(parameterTypeNames);
         }
+
+        public bool Equals(BehaviorConstructorInfo other)
+        {
+            return NamespaceName == other.NamespaceName &&
+                   ClassName == other.ClassName &&
+                   ParameterTypeNames == other.ParameterTypeNames;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = new HashCode();
+
+            hashCode.Add(NamespaceName);
+            hashCode.Add(ClassName);
+
+            return hashCode.ToHashCode();
+        }
     }
 }
