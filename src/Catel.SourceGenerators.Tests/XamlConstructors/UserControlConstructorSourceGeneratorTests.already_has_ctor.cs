@@ -12,7 +12,7 @@
     public partial class UserControlConstructorSourceGeneratorTests
     {
         [Test]
-        public async Task Generates_Nothing_When_No_Constructors_With_Parameters()
+        public async Task Generates_Nothing_When_Already_Has_Empty_Constructor_Parameters()
         {
             var driver = BuildNoOverloadsDriver();
 

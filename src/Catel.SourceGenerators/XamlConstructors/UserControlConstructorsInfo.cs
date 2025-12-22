@@ -2,19 +2,20 @@
 {
     using System.Collections.Generic;
 
-    public readonly record struct UserControlConstructorInfo
+    public readonly record struct UserControlConstructorsInfo
     {
         public readonly string FileName;
         public readonly string NamespaceName;
         public readonly string ClassName;
-        public readonly EquatableArray<string> ParameterTypeNames;
+        public readonly EquatableArray<ConstructorInfo> Constructors;
 
-        public UserControlConstructorInfo(string fileName, string namespaceName, string className, IReadOnlyList<string> parameterTypeNames)
+        public UserControlConstructorsInfo(string fileName, string namespaceName, string className, 
+            IReadOnlyList<ConstructorInfo> constructors)
         {
             FileName = fileName;
             NamespaceName = namespaceName;
             ClassName = className;
-            ParameterTypeNames = new(parameterTypeNames);
+            Constructors = new(constructors);
         }
     }
 }

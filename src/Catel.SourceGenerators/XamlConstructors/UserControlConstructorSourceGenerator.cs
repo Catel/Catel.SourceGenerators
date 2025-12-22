@@ -1,12 +1,14 @@
 ﻿namespace Catel.SourceGenerators.XamlConstructors
 {
-    using System.Text;
+    using System.Collections.Generic;
+    using System.Collections.Immutable;
+    using System.Diagnostics;
     using System.Linq;
+    using System.Text;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
     using Microsoft.CodeAnalysis.CSharp.Syntax;
     using Microsoft.CodeAnalysis.Text;
-    using System.Diagnostics;
 
     [Generator]
     public class UserControlConstructorSourceGenerator : IIncrementalGenerator
@@ -27,7 +29,7 @@
             //    return;
             //}
 
-            var constructorsToGenerate = syntax.CreateSyntaxProvider<UserControlConstructorInfo?>(
+            var constructorsToGenerate = syntax.CreateSyntaxProvider<UserControlConstructorsInfo?>(
                 predicate: static (s, _) =>
                 {
                     return IsSyntaxTargetForGeneration(s);
@@ -38,8 +40,18 @@
                 })
                 .Where(static m => m is not null);
 
-            context.RegisterSourceOutput(constructorsToGenerate,
-                static (spc, source) => Execute(spc, source));
+            // Collect all values, then deduplicate
+            var collected = constructorsToGenerate.Collect()
+                .Select((infos, _) => infos.Distinct().ToImmutableArray());
+
+            context.RegisterSourceOutput(collected,
+                static (spc, sources) =>
+                {
+                    foreach (var source in sources)
+                    {
+                        Execute(spc, source);
+                    }
+                });
         }
 
         private static bool IsSyntaxTargetForGeneration(SyntaxNode node)
@@ -52,7 +64,7 @@
             return true;
         }
 
-        private static UserControlConstructorInfo? Transform(GeneratorSyntaxContext context)
+        private static UserControlConstructorsInfo? Transform(GeneratorSyntaxContext context)
         {
             var semanticModel = context.SemanticModel;
             if (semanticModel.IsCatelAssembly())
@@ -68,6 +80,11 @@
 
             var classSymbol = semanticModel.GetDeclaredSymbol(classDeclarationSyntax) as INamedTypeSymbol;
             if (classSymbol is null)
+            {
+                return null;
+            }
+
+            if (classSymbol.IsAbstract)
             {
                 return null;
             }
@@ -90,43 +107,66 @@
                 return null;
             }
 
-            var emptyClassConstructor = classSymbol.Constructors.FirstOrDefault(x => !x.IsStatic && x.Parameters.Length == 0);
+            var emptyClassConstructor = classSymbol.InstanceConstructors.FirstOrDefault(x => x.Parameters.Length == 0);
             if (emptyClassConstructor is not null)
             {
-                // Has parameterless ctor already
-                return null;
-            }
+                // Has parameterless ctor already, but could be implicit
 
-            // Note: instead of using the *class* to get the ctors, we use the node. This is important since
-            // a partial class may be defined in multiple nodes, and we want to get the ctor defined in this specific node.
+                if (emptyClassConstructor.IsImplicitlyDeclared)
+                {
+                    // Generate 2 ctors: parameterless and DI, check base
+                    var baseClassConstructors = classSymbol.BaseType!.GetMembers()
+                        .Where(x => x is IMethodSymbol ctor)
+                        .Select(x => (IMethodSymbol)x)
+                        .OrderBy(x => x.Parameters.Length)
+                        .Where(x => x.Parameters.Any())
+                        .ToArray();
 
-            var constructors = classDeclarationSyntax.Members
-                .Where(x => x is ConstructorDeclarationSyntax ctor)
-                .Select(x => (ConstructorDeclarationSyntax)x)
-                .Where(x => x.ParameterList.ChildNodes().Any())
-                .ToArray();
-            if (constructors.Length == 0 || constructors.Length > 1)
-            {
+                    var ctors = new List<ConstructorInfo>();
+
+                    foreach (var baseCtor in baseClassConstructors)
+                    {
+                        ctors.Add(new ConstructorInfo(classSymbol.Name,
+                            baseCtor.Parameters.Select(x => new ParameterInfo(x.Name, x.Type.ToDisplayString())).ToArray(),
+                            true));
+
+                        ctors.Add(new ConstructorInfo(classSymbol.Name,
+                            baseCtor.Parameters.Select(x => new ParameterInfo(x.Name, x.Type.ToDisplayString())).ToArray(),
+                            false));
+                    }
+
+                    return new UserControlConstructorsInfo(
+                        classDeclarationSyntax.SyntaxTree.FilePath,
+                        classSymbol.ContainingNamespace.ToDisplayString(), classSymbol.Name,
+                        ctors);
+                }
+
                 return null;
             }
 
             var classConstructor = classSymbol.Constructors.Where(c => c.Parameters.Length > 0).Single();
 
-            var info = new UserControlConstructorInfo(
+            var info = new UserControlConstructorsInfo(
                 classDeclarationSyntax.SyntaxTree.FilePath,
                 classSymbol.ContainingNamespace.ToDisplayString(), classSymbol.Name,
-                classConstructor.Parameters.Select(x => x.Type.ToDisplayString()).ToArray());
+                new[]
+                {
+                    new ConstructorInfo(classSymbol.Name, 
+                        classConstructor.Parameters.Select(x => new ParameterInfo(x.Name, x.Type.ToDisplayString())).ToArray(), 
+                        false)
+                });
             return info;
         }
 
-        private static void Execute(SourceProductionContext sourceProductionContext, UserControlConstructorInfo? constructorInfo)
+        private static void Execute(SourceProductionContext sourceProductionContext, UserControlConstructorsInfo? constructorInfo)
         {
             if (constructorInfo is null)
             {
                 return;
             }
 
-            var ctorInfo = constructorInfo.Value;
+            var ctorsInfo = constructorInfo.Value;
+            var hasGeneratedPartialMethods = false;
 
             var sourceBuilder = new StringBuilder();
             sourceBuilder.AppendLine("using System;");
@@ -135,20 +175,53 @@
             sourceBuilder.AppendLine("using Catel.IoC;");
             sourceBuilder.AppendLine();
 
-            sourceBuilder.AppendLine($"namespace {ctorInfo.NamespaceName}");
+            sourceBuilder.AppendLine($"namespace {ctorsInfo.NamespaceName}");
             sourceBuilder.AppendLine("{");
-            sourceBuilder.AppendLine($"    partial class {ctorInfo.ClassName}");
+            sourceBuilder.AppendLine($"    partial class {ctorsInfo.ClassName}");
             sourceBuilder.AppendLine("    {");
 
-            // Generate empty constructor
-            sourceBuilder.AppendLine("        [CompilerGenerated]");
-            sourceBuilder.AppendLine($"        public {ctorInfo.ClassName}()");
-            sourceBuilder.Append("            : this(");
-            sourceBuilder.Append(string.Join(", ", ctorInfo.ParameterTypeNames.Select(p =>
-                $"IoCContainer.ServiceProvider.GetRequiredService<{p}>()")));
-            sourceBuilder.AppendLine(")");
-            sourceBuilder.AppendLine("        {");
-            sourceBuilder.AppendLine("        }");
+            foreach (var ctorInfo in ctorsInfo.Constructors)
+            {
+                if (ctorInfo.CallBase)
+                {
+                    if (!hasGeneratedPartialMethods)
+                    {
+                        hasGeneratedPartialMethods = true;
+
+                        sourceBuilder.AppendLine("        partial void OnInitializingComponent();");
+                        sourceBuilder.AppendLine();
+                        sourceBuilder.AppendLine("        partial void OnInitializedComponent();");
+                        sourceBuilder.AppendLine();
+                    }
+
+                    sourceBuilder.AppendLine("        [CompilerGenerated]");
+                    sourceBuilder.AppendLine("        [ActivatorUtilitiesConstructor]");
+                    sourceBuilder.AppendLine($"        public {ctorsInfo.ClassName}({string.Join(", ", ctorInfo.Parameters.Select(p =>
+                        $"{p.ParameterTypeName} {p.Name}"))})");
+                    sourceBuilder.Append("            : base(");
+                    sourceBuilder.Append(string.Join(", ", ctorInfo.Parameters.Select(p => p.Name)));
+                    sourceBuilder.AppendLine(")");
+                    sourceBuilder.AppendLine("        {");
+                    sourceBuilder.AppendLine("            OnInitializingComponent();");
+                    sourceBuilder.AppendLine("            InitializeComponent();");
+                    sourceBuilder.AppendLine("            OnInitializedComponent();");
+                    sourceBuilder.AppendLine("        }");
+                }
+                else
+                {
+                    // Generate empty constructor
+                    sourceBuilder.AppendLine("        [CompilerGenerated]");
+                    sourceBuilder.AppendLine($"        public {ctorsInfo.ClassName}()");
+                    sourceBuilder.Append("            : this(");
+                    sourceBuilder.Append(string.Join(", ", ctorInfo.Parameters.Select(p =>
+                        $"IoCContainer.ServiceProvider.GetRequiredService<{p.ParameterTypeName}>()")));
+                    sourceBuilder.AppendLine(")");
+                    sourceBuilder.AppendLine("        {");
+                    sourceBuilder.AppendLine("        }");
+                }
+
+                sourceBuilder.AppendLine();
+            }
 
             sourceBuilder.AppendLine("    }");
             sourceBuilder.AppendLine("}");
@@ -160,7 +233,7 @@
 //            }
 //#endif
 
-            var fileName = ctorInfo.FileName;
+            var fileName = ctorsInfo.FileName;
             if (!string.IsNullOrWhiteSpace(fileName))
             {
                 fileName = fileName.Replace(".xaml.", ".");
@@ -168,7 +241,7 @@
             }
             else
             {
-                fileName = ctorInfo.ClassName;
+                fileName = ctorsInfo.ClassName;
             }
 
             sourceProductionContext.AddSource($"{fileName}_UserControlConstructors.g.cs", SourceText.From(sourceBuilder.ToString(), Encoding.UTF8));
