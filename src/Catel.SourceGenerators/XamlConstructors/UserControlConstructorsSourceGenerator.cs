@@ -11,7 +11,7 @@
     using Microsoft.CodeAnalysis.Text;
 
     [Generator]
-    public class UserControlConstructorSourceGenerator : IIncrementalGenerator
+    public class UserControlConstructorsSourceGenerator : IIncrementalGenerator
     {
         //private bool _isIoCContainerAvailable = false;
 
@@ -144,17 +144,18 @@
                 return null;
             }
 
-            var classConstructor = classSymbol.Constructors.Where(c => c.Parameters.Length > 0).Single();
+            var classConstructors = classSymbol.InstanceConstructors
+                .Where(c => c.Parameters.Length > 0)
+                .Where(c => !c.Parameters[0].Type.ImplementsInterface("Catel.MVVM.IViewModel"))
+                .Select(x => new ConstructorInfo(classSymbol.Name,
+                        x.Parameters.Select(x => new ParameterInfo(x.Name, x.Type.ToDisplayString())).ToArray(),
+                        false))
+                .ToArray();
 
             var info = new UserControlConstructorsInfo(
                 classDeclarationSyntax.SyntaxTree.FilePath,
                 classSymbol.ContainingNamespace.ToDisplayString(), classSymbol.Name,
-                new[]
-                {
-                    new ConstructorInfo(classSymbol.Name, 
-                        classConstructor.Parameters.Select(x => new ParameterInfo(x.Name, x.Type.ToDisplayString())).ToArray(), 
-                        false)
-                });
+                classConstructors);
             return info;
         }
 
@@ -168,7 +169,7 @@
             var ctorsInfo = constructorInfo.Value;
             var hasGeneratedPartialMethods = false;
 
-            var sourceBuilder = new StringBuilder();
+            var sourceBuilder = new IndentedStringBuilder();
             sourceBuilder.AppendLine("using System;");
             sourceBuilder.AppendLine("using System.Runtime.CompilerServices;");
             sourceBuilder.AppendLine("using Microsoft.Extensions.DependencyInjection;");
@@ -176,9 +177,9 @@
             sourceBuilder.AppendLine();
 
             sourceBuilder.AppendLine($"namespace {ctorsInfo.NamespaceName}");
-            sourceBuilder.AppendLine("{");
-            sourceBuilder.AppendLine($"    partial class {ctorsInfo.ClassName}");
-            sourceBuilder.AppendLine("    {");
+            sourceBuilder.StartBlock();
+            sourceBuilder.AppendLine($"partial class {ctorsInfo.ClassName}");
+            sourceBuilder.StartBlock();
 
             foreach (var ctorInfo in ctorsInfo.Constructors)
             {
@@ -188,43 +189,43 @@
                     {
                         hasGeneratedPartialMethods = true;
 
-                        sourceBuilder.AppendLine("        partial void OnInitializingComponent();");
+                        sourceBuilder.AppendLine("partial void OnInitializingComponent();");
                         sourceBuilder.AppendLine();
-                        sourceBuilder.AppendLine("        partial void OnInitializedComponent();");
+                        sourceBuilder.AppendLine("partial void OnInitializedComponent();");
                         sourceBuilder.AppendLine();
                     }
 
-                    sourceBuilder.AppendLine("        [CompilerGenerated]");
-                    sourceBuilder.AppendLine("        [ActivatorUtilitiesConstructor]");
-                    sourceBuilder.AppendLine($"        public {ctorsInfo.ClassName}({string.Join(", ", ctorInfo.Parameters.Select(p =>
+                    sourceBuilder.AppendGeneratedCodeAttribute("UserControlConstructors");
+                    sourceBuilder.AppendLine("[ActivatorUtilitiesConstructor]");
+                    sourceBuilder.AppendLine($"public {ctorsInfo.ClassName}({string.Join(", ", ctorInfo.Parameters.Select(p =>
                         $"{p.ParameterTypeName} {p.Name}"))})");
-                    sourceBuilder.Append("            : base(");
+                    sourceBuilder.Append("    : base(");
                     sourceBuilder.Append(string.Join(", ", ctorInfo.Parameters.Select(p => p.Name)));
                     sourceBuilder.AppendLine(")");
-                    sourceBuilder.AppendLine("        {");
-                    sourceBuilder.AppendLine("            OnInitializingComponent();");
-                    sourceBuilder.AppendLine("            InitializeComponent();");
-                    sourceBuilder.AppendLine("            OnInitializedComponent();");
-                    sourceBuilder.AppendLine("        }");
+                    sourceBuilder.StartBlock();
+                    sourceBuilder.AppendLine("OnInitializingComponent();");
+                    sourceBuilder.AppendLine("InitializeComponent();");
+                    sourceBuilder.AppendLine("OnInitializedComponent();");
+                    sourceBuilder.EndBlock();
                 }
                 else
                 {
                     // Generate empty constructor
-                    sourceBuilder.AppendLine("        [CompilerGenerated]");
-                    sourceBuilder.AppendLine($"        public {ctorsInfo.ClassName}()");
-                    sourceBuilder.Append("            : this(");
+                    sourceBuilder.AppendGeneratedCodeAttribute("UserControlConstructors");
+                    sourceBuilder.AppendLine($"public {ctorsInfo.ClassName}()");
+                    sourceBuilder.Append("    : this(");
                     sourceBuilder.Append(string.Join(", ", ctorInfo.Parameters.Select(p =>
                         $"IoCContainer.ServiceProvider.GetRequiredService<{p.ParameterTypeName}>()")));
                     sourceBuilder.AppendLine(")");
-                    sourceBuilder.AppendLine("        {");
-                    sourceBuilder.AppendLine("        }");
+                    sourceBuilder.StartBlock();
+                    sourceBuilder.EndBlock();
                 }
 
                 sourceBuilder.AppendLine();
             }
 
-            sourceBuilder.AppendLine("    }");
-            sourceBuilder.AppendLine("}");
+            sourceBuilder.EndBlock();
+            sourceBuilder.EndBlock();
 
 //#if DEBUG
 //            if (!Debugger.IsAttached)

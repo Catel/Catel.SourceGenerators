@@ -12,7 +12,7 @@ namespace MyNamespace
 
         partial void OnInitializedComponent();
 
-        [CompilerGenerated]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Catel.UserControlConstructors", "1.0.0.0")]
         [ActivatorUtilitiesConstructor]
         public MyUserControl(MyNamespace.ILogger<MyNamespace.MyUserControl> logger, MyNamespace.IUserControlWrapperService userControlWrapperService)
             : base(logger, userControlWrapperService)
@@ -22,7 +22,7 @@ namespace MyNamespace
             OnInitializedComponent();
         }
 
-        [CompilerGenerated]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Catel.UserControlConstructors", "1.0.0.0")]
         public MyUserControl()
             : this(IoCContainer.ServiceProvider.GetRequiredService<MyNamespace.ILogger<MyNamespace.MyUserControl>>(), IoCContainer.ServiceProvider.GetRequiredService<MyNamespace.IUserControlWrapperService>())
         {

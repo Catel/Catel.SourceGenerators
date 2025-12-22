@@ -71,7 +71,7 @@ namespace Catel.IoC
                 iocContainerSource
             }.Select(x => CSharpSyntaxTree.ParseText(x)));
 
-            var generator = new UserControlConstructorSourceGenerator();
+            var generator = new UserControlConstructorsSourceGenerator();
 
             var driver = CSharpGeneratorDriver.Create(generator);
             return driver.RunGenerators(compilation);

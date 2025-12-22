@@ -1,15 +1,16 @@
 ﻿namespace Catel.SourceGenerators.XamlConstructors
 {
-    using System.Text;
+    using System.CodeDom.Compiler;
+    using System.Diagnostics;
     using System.Linq;
+    using System.Text;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
     using Microsoft.CodeAnalysis.CSharp.Syntax;
     using Microsoft.CodeAnalysis.Text;
-    using System.Diagnostics;
 
     [Generator]
-    public class BehaviorConstructorSourceGenerator : IIncrementalGenerator
+    public class BehaviorConstructorsSourceGenerator : IIncrementalGenerator
     {
         //private bool _isIoCContainerAvailable = false;
 
@@ -109,7 +110,9 @@
                 return null;
             }
 
-            var classConstructor = classSymbol.Constructors.Where(c => c.Parameters.Length > 0).Single();
+            var classConstructor = classSymbol.InstanceConstructors
+                .Where(c => c.Parameters.Length > 0)
+                .FirstOrDefault();
 
             var info = new BehaviorConstructorInfo(
                 classDeclarationSyntax.SyntaxTree.FilePath,
@@ -127,7 +130,7 @@
 
             var ctorInfo = constructorInfo.Value;
 
-            var sourceBuilder = new StringBuilder();
+            var sourceBuilder = new IndentedStringBuilder();
             sourceBuilder.AppendLine("using System;");
             sourceBuilder.AppendLine("using System.Runtime.CompilerServices;");
             sourceBuilder.AppendLine("using Microsoft.Extensions.DependencyInjection;");
@@ -135,22 +138,22 @@
             sourceBuilder.AppendLine();
 
             sourceBuilder.AppendLine($"namespace {ctorInfo.NamespaceName}");
-            sourceBuilder.AppendLine("{");
-            sourceBuilder.AppendLine($"    partial class {ctorInfo.ClassName}");
-            sourceBuilder.AppendLine("    {");
+            sourceBuilder.StartBlock();
+            sourceBuilder.AppendLine($"partial class {ctorInfo.ClassName}");
+            sourceBuilder.StartBlock();
 
             // Generate empty constructor
-            sourceBuilder.AppendLine("        [CompilerGenerated]");
-            sourceBuilder.AppendLine($"        public {ctorInfo.ClassName}()");
-            sourceBuilder.Append("            : this(");
+            sourceBuilder.AppendGeneratedCodeAttribute("BehaviorConstructors");
+            sourceBuilder.AppendLine($"public {ctorInfo.ClassName}()");
+            sourceBuilder.Append("    : this(");
             sourceBuilder.Append(string.Join(", ", ctorInfo.ParameterTypeNames.Select(p =>
                 $"IoCContainer.ServiceProvider.GetRequiredService<{p}>()")));
             sourceBuilder.AppendLine(")");
-            sourceBuilder.AppendLine("        {");
-            sourceBuilder.AppendLine("        }");
+            sourceBuilder.StartBlock();
+            sourceBuilder.EndBlock();
 
-            sourceBuilder.AppendLine("    }");
-            sourceBuilder.AppendLine("}");
+            sourceBuilder.EndBlock();
+            sourceBuilder.EndBlock();
 
             //#if DEBUG
             //            if (!Debugger.IsAttached)

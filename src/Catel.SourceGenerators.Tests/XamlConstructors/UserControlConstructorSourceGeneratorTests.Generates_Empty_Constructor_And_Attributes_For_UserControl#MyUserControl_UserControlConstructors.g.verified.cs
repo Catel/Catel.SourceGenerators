@@ -8,7 +8,7 @@ namespace MyNamespace
 {
     partial class MyUserControl
     {
-        [CompilerGenerated]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Catel.UserControlConstructors", "1.0.0.0")]
         public MyUserControl()
             : this(IoCContainer.ServiceProvider.GetRequiredService<MyNamespace.ILogger<MyNamespace.MyUserControl>>(), IoCContainer.ServiceProvider.GetRequiredService<MyNamespace.IUserControlWrapperService>())
         {
