@@ -24,6 +24,7 @@
             var userControlSource = @"
 using System.Windows.Controls;
 using Catel.IoC;
+using Catel.MVVM;
 
 namespace MyNamespace
 {
@@ -47,11 +48,23 @@ namespace MyNamespace
         protected MyUserControl(ILogger<MyUserControl> logger, IUserControlWrapperService userControlWrapperService)
         {
         }
+
+        protected MyUserControl(IViewModel? viewModel, ILogger<MyUserControl> logger, IUserControlWrapperService userControlWrapperService)
+        {
+        }
     }
 }
 ";
 
             var iocContainerSource = @"
+namespace Catel.MVVM
+{
+    public interface IViewModel
+    {
+
+    }
+}
+
 namespace Catel.IoC
 {
     public static class IoCContainer

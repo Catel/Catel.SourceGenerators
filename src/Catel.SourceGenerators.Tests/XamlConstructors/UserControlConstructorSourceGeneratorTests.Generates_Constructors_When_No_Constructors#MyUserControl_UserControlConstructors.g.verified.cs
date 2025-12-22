@@ -4,6 +4,8 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Catel.IoC;
 
+#nullable enable
+
 namespace MyNamespace
 {
     partial class MyUserControl
@@ -26,6 +28,16 @@ namespace MyNamespace
         public MyUserControl()
             : this(IoCContainer.ServiceProvider.GetRequiredService<MyNamespace.ILogger<MyNamespace.MyUserControl>>(), IoCContainer.ServiceProvider.GetRequiredService<MyNamespace.IUserControlWrapperService>())
         {
+        }
+
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Catel.UserControlConstructors", "1.0.0.0")]
+        [ActivatorUtilitiesConstructor]
+        public MyUserControl(Catel.MVVM.IViewModel? viewModel, MyNamespace.ILogger<MyNamespace.MyUserControl> logger, MyNamespace.IUserControlWrapperService userControlWrapperService)
+            : base(viewModel, logger, userControlWrapperService)
+        {
+            OnInitializingComponent();
+            InitializeComponent();
+            OnInitializedComponent();
         }
 
     }

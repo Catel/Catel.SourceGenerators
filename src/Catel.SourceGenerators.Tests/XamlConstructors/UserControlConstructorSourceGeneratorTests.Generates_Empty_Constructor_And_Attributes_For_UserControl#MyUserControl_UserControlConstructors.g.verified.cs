@@ -4,6 +4,8 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Catel.IoC;
 
+#nullable enable
+
 namespace MyNamespace
 {
     partial class MyUserControl

@@ -126,13 +126,25 @@
 
                     foreach (var baseCtor in baseClassConstructors)
                     {
+                        if (baseCtor.Name != ".ctor")
+                        {
+                            // Not a ctor
+                            continue;
+                        }
+
+                        var isViewModelInjectionCtor = baseCtor.Parameters[0].Type.ImplementsInterface("Catel.MVVM.IViewModel");
+                        
                         ctors.Add(new ConstructorInfo(classSymbol.Name,
-                            baseCtor.Parameters.Select(x => new ParameterInfo(x.Name, x.Type.ToDisplayString())).ToArray(),
+                            baseCtor.Parameters.Select(x => new ParameterInfo(x.Name, x.Type.ToDisplayString(), x.IsNullable())).ToArray(),
                             true));
 
-                        ctors.Add(new ConstructorInfo(classSymbol.Name,
-                            baseCtor.Parameters.Select(x => new ParameterInfo(x.Name, x.Type.ToDisplayString())).ToArray(),
-                            false));
+                        // Only generate empty ctor for non-view model injection ctor
+                        if (!isViewModelInjectionCtor)
+                        {
+                            ctors.Add(new ConstructorInfo(classSymbol.Name,
+                                baseCtor.Parameters.Select(x => new ParameterInfo(x.Name, x.Type.ToDisplayString(), x.IsNullable())).ToArray(),
+                                false));
+                        }
                     }
 
                     return new UserControlConstructorsInfo(
@@ -148,7 +160,7 @@
                 .Where(c => c.Parameters.Length > 0)
                 .Where(c => !c.Parameters[0].Type.ImplementsInterface("Catel.MVVM.IViewModel"))
                 .Select(x => new ConstructorInfo(classSymbol.Name,
-                        x.Parameters.Select(x => new ParameterInfo(x.Name, x.Type.ToDisplayString())).ToArray(),
+                        x.Parameters.Select(x => new ParameterInfo(x.Name, x.Type.ToDisplayString(), x.IsNullable())).ToArray(),
                         false))
                 .ToArray();
 
@@ -174,6 +186,8 @@
             sourceBuilder.AppendLine("using System.Runtime.CompilerServices;");
             sourceBuilder.AppendLine("using Microsoft.Extensions.DependencyInjection;");
             sourceBuilder.AppendLine("using Catel.IoC;");
+            sourceBuilder.AppendLine();
+            sourceBuilder.AppendLine("#nullable enable");
             sourceBuilder.AppendLine();
 
             sourceBuilder.AppendLine($"namespace {ctorsInfo.NamespaceName}");

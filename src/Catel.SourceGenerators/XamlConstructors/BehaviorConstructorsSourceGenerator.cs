@@ -136,6 +136,8 @@
             sourceBuilder.AppendLine("using Microsoft.Extensions.DependencyInjection;");
             sourceBuilder.AppendLine("using Catel.IoC;");
             sourceBuilder.AppendLine();
+            sourceBuilder.AppendLine("#nullable enable");
+            sourceBuilder.AppendLine();
 
             sourceBuilder.AppendLine($"namespace {ctorInfo.NamespaceName}");
             sourceBuilder.StartBlock();
