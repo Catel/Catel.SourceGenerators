@@ -133,17 +133,18 @@
                         }
 
                         var isViewModelInjectionCtor = baseCtor.Parameters[0].Type.ImplementsInterface("Catel.MVVM.IViewModel");
-                        
+
                         ctors.Add(new ConstructorInfo(classSymbol.Name,
                             baseCtor.Parameters.Select(x => new ParameterInfo(x.Name, x.Type.ToDisplayString(), x.IsNullable())).ToArray(),
-                            true));
+                            true,
+                            !isViewModelInjectionCtor));
 
                         // Only generate empty ctor for non-view model injection ctor
                         if (!isViewModelInjectionCtor)
                         {
                             ctors.Add(new ConstructorInfo(classSymbol.Name,
                                 baseCtor.Parameters.Select(x => new ParameterInfo(x.Name, x.Type.ToDisplayString(), x.IsNullable())).ToArray(),
-                                false));
+                                false, false));
                         }
                     }
 
@@ -161,7 +162,7 @@
                 .Where(c => !c.Parameters[0].Type.ImplementsInterface("Catel.MVVM.IViewModel"))
                 .Select(x => new ConstructorInfo(classSymbol.Name,
                         x.Parameters.Select(x => new ParameterInfo(x.Name, x.Type.ToDisplayString(), x.IsNullable())).ToArray(),
-                        false))
+                        false, true))
                 .ToArray();
 
             var info = new UserControlConstructorsInfo(
@@ -210,7 +211,12 @@
                     }
 
                     sourceBuilder.AppendGeneratedCodeAttribute("UserControlConstructors");
-                    sourceBuilder.AppendLine("[ActivatorUtilitiesConstructor]");
+
+                    if (ctorInfo.IsActivatorUtilitiesConstructor)
+                    {
+                        sourceBuilder.AppendLine("[ActivatorUtilitiesConstructor]");
+                    }
+
                     sourceBuilder.AppendLine($"public {ctorsInfo.ClassName}({string.Join(", ", ctorInfo.Parameters.Select(p =>
                         $"{p.ParameterTypeName} {p.Name}"))})");
                     sourceBuilder.Append("    : base(");
@@ -241,12 +247,12 @@
             sourceBuilder.EndBlock();
             sourceBuilder.EndBlock();
 
-//#if DEBUG
-//            if (!Debugger.IsAttached)
-//            {
-//                Debugger.Launch();
-//            }
-//#endif
+            //#if DEBUG
+            //            if (!Debugger.IsAttached)
+            //            {
+            //                Debugger.Launch();
+            //            }
+            //#endif
 
             var fileName = ctorsInfo.FileName;
             if (!string.IsNullOrWhiteSpace(fileName))
