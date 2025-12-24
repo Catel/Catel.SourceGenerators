@@ -29,7 +29,7 @@
             //    return;
             //}
 
-            var constructorsToGenerate = syntax.CreateSyntaxProvider<UserControlConstructorsInfo?>(
+            var constructorsToGenerate = syntax.CreateSyntaxProvider(
                 predicate: static (s, _) =>
                 {
                     return IsSyntaxTargetForGeneration(s);
@@ -78,6 +78,11 @@
                 return null;
             }
 
+            if (!classDeclarationSyntax.IsPartialType())
+            {
+                return null;
+            }
+
             var classSymbol = semanticModel.GetDeclaredSymbol(classDeclarationSyntax) as INamedTypeSymbol;
             if (classSymbol is null)
             {
@@ -88,12 +93,12 @@
             {
                 return null;
             }
-
             var baseType = classSymbol.BaseType;
             while (baseType is not null)
             {
                 var displayString = baseType.ToDisplayString();
-                if (displayString == "System.Windows.Controls.UserControl" ||
+                if (displayString == "System.Windows.Controls.Control" || 
+                    displayString == "System.Windows.Controls.UserControl" ||
                     displayString == "System.Windows.Window")
                 {
                     break;

@@ -10,7 +10,7 @@
     using Microsoft.CodeAnalysis.Text;
 
     [Generator]
-    public class BehaviorConstructorsSourceGenerator : IIncrementalGenerator
+    public class ValueConverterConstructorsSourceGenerator : IIncrementalGenerator
     {
         //private bool _isIoCContainerAvailable = false;
 
@@ -52,11 +52,16 @@
             return true;
         }
 
-        private static BehaviorConstructorInfo? Transform(GeneratorSyntaxContext context)
+        private static ValueConverterConstructorInfo? Transform(GeneratorSyntaxContext context)
         {
             var semanticModel = context.SemanticModel;
             var classDeclarationSyntax = context.Node as ClassDeclarationSyntax;
             if (classDeclarationSyntax is null)
+            {
+                return null;
+            }
+
+            if (!classDeclarationSyntax.IsPartialType())
             {
                 return null;
             }
@@ -68,24 +73,7 @@
                 return null;
             }
 
-            if (!classDeclarationSyntax.IsPartialType())
-            {
-                return null;
-            }
-
-            var baseType = classSymbol.BaseType;
-            while (baseType is not null)
-            {
-                var displayString = baseType.ToDisplayString();
-                if (displayString == "Microsoft.Xaml.Behaviors.Behavior")
-                {
-                    break;
-                }
-
-                baseType = baseType.BaseType;
-            }
-
-            if (baseType is null)
+            if (!classSymbol.ImplementsInterface("System.Windows.Data.IValueConverter"))
             {
                 return null;
             }
@@ -119,14 +107,14 @@
                 .Where(c => c.Parameters.Length > 0)
                 .FirstOrDefault();
 
-            var info = new BehaviorConstructorInfo(
+            var info = new ValueConverterConstructorInfo(
                 classDeclarationSyntax.SyntaxTree.FilePath,
                 classSymbol.ContainingNamespace.ToDisplayString(), classSymbol.Name,
                 classConstructor.Parameters.Select(x => x.Type.ToDisplayString()).ToArray());
             return info;
         }
 
-        private static void Execute(SourceProductionContext sourceProductionContext, BehaviorConstructorInfo? constructorInfo)
+        private static void Execute(SourceProductionContext sourceProductionContext, ValueConverterConstructorInfo? constructorInfo)
         {
             if (constructorInfo is null)
             {
@@ -150,7 +138,7 @@
             sourceBuilder.StartBlock();
 
             // Generate empty constructor
-            sourceBuilder.AppendGeneratedCodeAttribute("BehaviorConstructors");
+            sourceBuilder.AppendGeneratedCodeAttribute("ValueConverterConstructors");
             sourceBuilder.AppendLine($"public {ctorInfo.ClassName}()");
             sourceBuilder.Append("    : this(");
             sourceBuilder.Append(string.Join(", ", ctorInfo.ParameterTypeNames.Select(p =>
