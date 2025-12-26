@@ -201,6 +201,8 @@
             sourceBuilder.AppendLine($"partial class {ctorsInfo.ClassName}");
             sourceBuilder.StartBlock();
 
+            sourceBuilder.AppendResolveServiceMethod();
+
             foreach (var ctorInfo in ctorsInfo.Constructors)
             {
                 if (ctorInfo.CallBase)
@@ -240,7 +242,7 @@
                     sourceBuilder.AppendLine($"public {ctorsInfo.ClassName}()");
                     sourceBuilder.Append("    : this(");
                     sourceBuilder.Append(string.Join(", ", ctorInfo.Parameters.Select(p =>
-                        $"IoCContainer.ServiceProvider.GetRequiredService<{p.ParameterTypeName}>()")));
+                        $"GetService<{p.ParameterTypeName}>()")));
                     sourceBuilder.AppendLine(")");
                     sourceBuilder.StartBlock();
                     sourceBuilder.EndBlock();

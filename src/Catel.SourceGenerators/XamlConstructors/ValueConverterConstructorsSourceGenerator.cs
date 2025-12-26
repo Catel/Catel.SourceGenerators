@@ -137,12 +137,14 @@
             sourceBuilder.AppendLine($"partial class {ctorInfo.ClassName}");
             sourceBuilder.StartBlock();
 
+            sourceBuilder.AppendResolveServiceMethod();
+
             // Generate empty constructor
             sourceBuilder.AppendGeneratedCodeAttribute("ValueConverterConstructors");
             sourceBuilder.AppendLine($"public {ctorInfo.ClassName}()");
             sourceBuilder.Append("    : this(");
             sourceBuilder.Append(string.Join(", ", ctorInfo.ParameterTypeNames.Select(p =>
-                $"IoCContainer.ServiceProvider.GetRequiredService<{p}>()")));
+                $"GetService<{p}>()")));
             sourceBuilder.AppendLine(")");
             sourceBuilder.StartBlock();
             sourceBuilder.EndBlock();

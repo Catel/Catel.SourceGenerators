@@ -22,5 +22,20 @@
         {
             writer.AppendLine($"""[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Catel.{generatorName}", "{GeneratorVersion}")]""");
         }
+
+        public static void AppendResolveServiceMethod(this IndentedStringBuilder writer)
+        {
+            writer.AppendLine($"private static T GetService<T>()");
+            writer.AppendLine($"    where T : class");
+            writer.StartBlock();
+            writer.AppendLine("if (Catel.CatelEnvironment.IsInDesignMode)");
+            writer.StartBlock();
+            writer.AppendLine("return null!;");
+            writer.EndBlock();
+            writer.AppendLine();
+            writer.AppendLine("return Catel.IoC.IoCContainer.ServiceProvider.GetRequiredService<T>();");
+            writer.EndBlock();
+            writer.AppendLine();
+        }
     }
 }
