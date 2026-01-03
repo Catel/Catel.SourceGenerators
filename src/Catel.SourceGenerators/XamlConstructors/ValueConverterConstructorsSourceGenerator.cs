@@ -1,7 +1,5 @@
 ﻿namespace Catel.SourceGenerators.XamlConstructors
 {
-    using System.CodeDom.Compiler;
-    using System.Diagnostics;
     using System.Linq;
     using System.Text;
     using Microsoft.CodeAnalysis;
@@ -57,11 +55,6 @@
             var semanticModel = context.SemanticModel;
             var classDeclarationSyntax = context.Node as ClassDeclarationSyntax;
             if (classDeclarationSyntax is null)
-            {
-                return null;
-            }
-
-            if (!classDeclarationSyntax.IsPartialType())
             {
                 return null;
             }
