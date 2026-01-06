@@ -10,6 +10,7 @@ namespace MyNamespace
 {
     partial class MyConverter
     {
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Catel.ValueConverterConstructors", "1.0.0.0")]
         private static T GetService<T>()
             where T : class
         {

@@ -130,7 +130,7 @@
             sourceBuilder.AppendLine($"partial class {ctorInfo.ClassName}");
             sourceBuilder.StartBlock();
 
-            sourceBuilder.AppendResolveServiceMethod();
+            sourceBuilder.AppendResolveServiceMethod("ValueConverterConstructors");
 
             // Generate empty constructor
             sourceBuilder.AppendGeneratedCodeAttribute("ValueConverterConstructors");

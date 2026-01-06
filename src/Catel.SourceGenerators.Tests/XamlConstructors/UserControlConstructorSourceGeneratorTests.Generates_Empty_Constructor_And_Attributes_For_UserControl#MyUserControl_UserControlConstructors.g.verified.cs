@@ -10,6 +10,7 @@ namespace MyNamespace
 {
     partial class MyUserControl
     {
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Catel.UserControlConstructors", "1.0.0.0")]
         private static T GetService<T>()
             where T : class
         {
@@ -19,6 +20,17 @@ namespace MyNamespace
             }
 
             return Catel.IoC.IoCContainer.ServiceProvider.GetRequiredService<T>();
+        }
+
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Catel.UserControlConstructors", "1.0.0.0")]
+        private static void InitializeViewPropertyMappings()
+        {
+            if (CatelEnvironment.IsInDesignMode)
+            {
+                return;
+            }
+
+            typeof(MyUserControl).AutoDetectViewPropertiesToSubscribe(IoCContainer.ServiceProvider.GetRequiredService<IViewPropertySelector>());
         }
 
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Catel.UserControlConstructors", "1.0.0.0")]

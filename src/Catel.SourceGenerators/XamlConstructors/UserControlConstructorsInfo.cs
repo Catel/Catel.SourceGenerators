@@ -8,14 +8,16 @@
         public readonly string FileName;
         public readonly string NamespaceName;
         public readonly string ClassName;
+        public readonly bool CreateStaticConstructor;
         public readonly EquatableArray<ConstructorInfo> Constructors;
 
         public UserControlConstructorsInfo(string fileName, string namespaceName, string className, 
-            IReadOnlyList<ConstructorInfo> constructors)
+            bool createStaticConstructor, IReadOnlyList<ConstructorInfo> constructors)
         {
             FileName = fileName;
             NamespaceName = namespaceName;
             ClassName = className;
+            CreateStaticConstructor = createStaticConstructor;
             Constructors = new(constructors);
         }
 

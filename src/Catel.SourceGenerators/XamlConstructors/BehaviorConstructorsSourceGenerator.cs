@@ -149,7 +149,7 @@
             sourceBuilder.AppendLine($"partial class {ctorInfo.ClassName}");
             sourceBuilder.StartBlock();
 
-            sourceBuilder.AppendResolveServiceMethod();
+            sourceBuilder.AppendResolveServiceMethod("BehaviorConstructors");
 
             // Generate empty constructor
             sourceBuilder.AppendGeneratedCodeAttribute("BehaviorConstructors");

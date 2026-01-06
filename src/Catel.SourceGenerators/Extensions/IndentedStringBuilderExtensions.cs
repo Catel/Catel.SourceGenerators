@@ -23,8 +23,9 @@
             writer.AppendLine($"""[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Catel.{generatorName}", "{GeneratorVersion}")]""");
         }
 
-        public static void AppendResolveServiceMethod(this IndentedStringBuilder writer)
+        public static void AppendResolveServiceMethod(this IndentedStringBuilder writer, string generatorName)
         {
+            writer.AppendGeneratedCodeAttribute(generatorName);
             writer.AppendLine($"private static T GetService<T>()");
             writer.AppendLine($"    where T : class");
             writer.StartBlock();

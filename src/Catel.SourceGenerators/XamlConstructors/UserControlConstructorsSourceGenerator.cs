@@ -2,6 +2,7 @@
 {
     using System.Collections.Generic;
     using System.Collections.Immutable;
+    using System.ComponentModel;
     using System.Diagnostics;
     using System.Linq;
     using System.Text;
@@ -93,11 +94,22 @@
             {
                 return null;
             }
+
+            var isCatelView = false;
             var baseType = classSymbol.BaseType;
             while (baseType is not null)
             {
                 var displayString = baseType.ToDisplayString();
-                if (displayString == "System.Windows.Controls.Control" || 
+                if (!isCatelView)
+                {
+                    if (displayString.Contains("Catel.Windows.Controls.UserControl") ||
+                        displayString.Contains("Catel.Windows.Controls.UserControl"))
+                    {
+                        isCatelView = true;
+                    }
+                }
+
+                if (displayString == "System.Windows.Controls.Control" ||
                     displayString == "System.Windows.Controls.UserControl" ||
                     displayString == "System.Windows.Window")
                 {
@@ -155,7 +167,9 @@
 
                     return new UserControlConstructorsInfo(
                         classDeclarationSyntax.SyntaxTree.FilePath,
-                        classSymbol.ContainingNamespace.ToDisplayString(), classSymbol.Name,
+                        classSymbol.ContainingNamespace.ToDisplayString(),
+                        classSymbol.Name,
+                        isCatelView && classSymbol.Constructors.Any(x => x.IsStatic),
                         ctors);
                 }
 
@@ -172,7 +186,9 @@
 
             var info = new UserControlConstructorsInfo(
                 classDeclarationSyntax.SyntaxTree.FilePath,
-                classSymbol.ContainingNamespace.ToDisplayString(), classSymbol.Name,
+                classSymbol.ContainingNamespace.ToDisplayString(),
+                classSymbol.Name,
+                isCatelView && classSymbol.Constructors.Any(x => x.IsStatic),
                 classConstructors);
             return info;
         }
@@ -201,7 +217,29 @@
             sourceBuilder.AppendLine($"partial class {ctorsInfo.ClassName}");
             sourceBuilder.StartBlock();
 
-            sourceBuilder.AppendResolveServiceMethod();
+            sourceBuilder.AppendResolveServiceMethod("UserControlConstructors");
+
+            sourceBuilder.AppendGeneratedCodeAttribute("UserControlConstructors");
+            sourceBuilder.AppendLine("private static void InitializeViewPropertyMappings()");
+            sourceBuilder.StartBlock();
+            sourceBuilder.AppendLine("if (CatelEnvironment.IsInDesignMode)");
+            sourceBuilder.StartBlock();
+            sourceBuilder.AppendLine("return;");
+            sourceBuilder.EndBlock();
+            sourceBuilder.AppendLine();
+            sourceBuilder.AppendLine($"typeof({ctorsInfo.ClassName}).AutoDetectViewPropertiesToSubscribe(IoCContainer.ServiceProvider.GetRequiredService<IViewPropertySelector>());");
+            sourceBuilder.EndBlock();
+
+            if (ctorsInfo.CreateStaticConstructor)
+            {
+                sourceBuilder.AppendGeneratedCodeAttribute("UserControlConstructors");
+                sourceBuilder.AppendLine($"static {ctorsInfo.ClassName})");
+                sourceBuilder.StartBlock();
+                sourceBuilder.AppendLine("InitializeViewPropertyMappings();");
+                sourceBuilder.EndBlock();
+            }
+
+            sourceBuilder.AppendLine();
 
             foreach (var ctorInfo in ctorsInfo.Constructors)
             {
