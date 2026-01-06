@@ -2,7 +2,9 @@
 using System;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
+using Catel;
 using Catel.IoC;
+using Catel.MVVM.Views;
 
 #nullable enable
 
@@ -31,6 +33,12 @@ namespace MyNamespace
             }
 
             typeof(MyUserControl).AutoDetectViewPropertiesToSubscribe(IoCContainer.ServiceProvider.GetRequiredService<IViewPropertySelector>());
+        }
+
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Catel.UserControlConstructors", "1.0.0.0")]
+        static MyUserControl()
+        {
+            InitializeViewPropertyMappings();
         }
 
         partial void OnInitializingComponent();

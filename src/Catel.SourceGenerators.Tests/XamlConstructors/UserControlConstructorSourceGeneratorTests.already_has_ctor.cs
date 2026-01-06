@@ -27,7 +27,7 @@ using Catel.IoC;
 
 namespace MyNamespace
 {
-    public partial class MyUserControl : System.Windows.Controls.UserControl
+    public partial class MyUserControl : Catel.Windows.Controls.UserControl
     {
         public MyUserControl()
         {
@@ -50,6 +50,14 @@ namespace Catel.IoC
         {
             public T GetRequiredService<T>() => default(T);
         }
+    }
+}
+
+namespace Catel.Windows.Controls
+{
+    public class UserControl : System.Windows.Controls.UserControl
+    {
+        
     }
 }
 ";

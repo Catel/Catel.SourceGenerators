@@ -30,7 +30,9 @@ namespace MyNamespace
 {
     public partial class MyUserControl : UserControlBase
     {
-
+        static MyUserControl()
+        {
+        }
     }
 
     public partial class MyUserControl
@@ -43,7 +45,7 @@ namespace MyNamespace
     public interface ILogger<T> {}
     public interface IUserControlWrapperService {}
 
-    public abstract class UserControlBase : System.Windows.Controls.UserControl
+    public abstract class UserControlBase : Catel.Windows.Controls.UserControl
     {
         protected MyUserControl(ILogger<MyUserControl> logger, IUserControlWrapperService userControlWrapperService)
         {
@@ -62,6 +64,14 @@ namespace Catel.MVVM
     public interface IViewModel
     {
 
+    }
+}
+
+namespace Catel.Windows.Controls
+{
+    public class UserControl : System.Windows.Controls.UserControl
+    {
+        
     }
 }
 

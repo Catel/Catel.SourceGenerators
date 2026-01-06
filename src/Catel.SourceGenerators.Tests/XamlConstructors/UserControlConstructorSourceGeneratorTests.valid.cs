@@ -27,7 +27,7 @@ using Catel.IoC;
 
 namespace MyNamespace
 {
-    public partial class MyUserControl : System.Windows.Controls.UserControl
+    public partial class MyUserControl : Catel.Windows.Controls.UserControl
     {
         public MyUserControl(ILogger<MyUserControl> logger, IUserControlWrapperService userControlWrapperService)
             : base(logger, userControlWrapperService)
@@ -49,6 +49,14 @@ namespace MyNamespace
 ";
 
             var iocContainerSource = @"
+namespace Catel.Windows.Controls
+{
+    public class UserControl : System.Windows.Controls.UserControl
+    {
+        
+    }
+}
+
 namespace Catel.IoC
 {
     public static class IoCContainer

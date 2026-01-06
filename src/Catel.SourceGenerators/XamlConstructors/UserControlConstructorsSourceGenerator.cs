@@ -2,8 +2,6 @@
 {
     using System.Collections.Generic;
     using System.Collections.Immutable;
-    using System.ComponentModel;
-    using System.Diagnostics;
     using System.Linq;
     using System.Text;
     using Microsoft.CodeAnalysis;
@@ -103,7 +101,7 @@
                 if (!isCatelView)
                 {
                     if (displayString.Contains("Catel.Windows.Controls.UserControl") ||
-                        displayString.Contains("Catel.Windows.Controls.UserControl"))
+                        displayString.Contains("Catel.Windows.DataWindow"))
                     {
                         isCatelView = true;
                     }
@@ -169,7 +167,7 @@
                         classDeclarationSyntax.SyntaxTree.FilePath,
                         classSymbol.ContainingNamespace.ToDisplayString(),
                         classSymbol.Name,
-                        isCatelView && classSymbol.Constructors.Any(x => x.IsStatic),
+                        isCatelView && !classSymbol.HasStaticConstructorWithContent(),
                         ctors);
                 }
 
@@ -188,7 +186,7 @@
                 classDeclarationSyntax.SyntaxTree.FilePath,
                 classSymbol.ContainingNamespace.ToDisplayString(),
                 classSymbol.Name,
-                isCatelView && classSymbol.Constructors.Any(x => x.IsStatic),
+                isCatelView && !classSymbol.HasStaticConstructorWithContent(),
                 classConstructors);
             return info;
         }
@@ -207,7 +205,9 @@
             sourceBuilder.AppendLine("using System;");
             sourceBuilder.AppendLine("using System.Runtime.CompilerServices;");
             sourceBuilder.AppendLine("using Microsoft.Extensions.DependencyInjection;");
+            sourceBuilder.AppendLine("using Catel;");
             sourceBuilder.AppendLine("using Catel.IoC;");
+            sourceBuilder.AppendLine("using Catel.MVVM.Views;");
             sourceBuilder.AppendLine();
             sourceBuilder.AppendLine("#nullable enable");
             sourceBuilder.AppendLine();
@@ -230,10 +230,12 @@
             sourceBuilder.AppendLine($"typeof({ctorsInfo.ClassName}).AutoDetectViewPropertiesToSubscribe(IoCContainer.ServiceProvider.GetRequiredService<IViewPropertySelector>());");
             sourceBuilder.EndBlock();
 
+            sourceBuilder.AppendLine();
+
             if (ctorsInfo.CreateStaticConstructor)
             {
                 sourceBuilder.AppendGeneratedCodeAttribute("UserControlConstructors");
-                sourceBuilder.AppendLine($"static {ctorsInfo.ClassName})");
+                sourceBuilder.AppendLine($"static {ctorsInfo.ClassName}()");
                 sourceBuilder.StartBlock();
                 sourceBuilder.AppendLine("InitializeViewPropertyMappings();");
                 sourceBuilder.EndBlock();
