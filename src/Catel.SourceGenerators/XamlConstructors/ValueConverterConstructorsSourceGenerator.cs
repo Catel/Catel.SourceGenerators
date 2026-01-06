@@ -66,7 +66,8 @@
                 return null;
             }
 
-            if (!classSymbol.ImplementsInterface("System.Windows.Data.IValueConverter"))
+            if (!classSymbol.ImplementsInterface("System.Windows.Data.IValueConverter") &&
+                !classSymbol.ImplementsInterface("System.Windows.Data.IMultiValueConverter"))
             {
                 return null;
             }
