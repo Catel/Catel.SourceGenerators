@@ -152,7 +152,7 @@
                         ctors.Add(new ConstructorInfo(classSymbol.Name,
                             baseCtor.Parameters.Select(x => new ParameterInfo(x.Name, x.Type.ToDisplayString(), x.IsNullable())).ToArray(),
                             true,
-                            !isViewModelInjectionCtor));
+                            false));
 
                         // Only generate empty ctor for non-view model injection ctor
                         if (!isViewModelInjectionCtor)

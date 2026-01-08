@@ -46,7 +46,6 @@ namespace MyNamespace
         partial void OnInitializedComponent();
 
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Catel.UserControlConstructors", "1.0.0.0")]
-        [ActivatorUtilitiesConstructor]
         public MyUserControl(MyNamespace.ILogger<MyNamespace.MyUserControl> logger, MyNamespace.IUserControlWrapperService userControlWrapperService)
             : base(logger, userControlWrapperService)
         {
