@@ -174,12 +174,14 @@
                 return null;
             }
 
+            // TODO: Figure out how to filter the right constructor with the view model
+
             var classConstructors = classSymbol.InstanceConstructors
                 .Where(c => c.Parameters.Length > 0)
                 .Where(c => !c.Parameters[0].Type.ImplementsInterface("Catel.MVVM.IViewModel"))
                 .Select(x => new ConstructorInfo(classSymbol.Name,
                         x.Parameters.Select(x => new ParameterInfo(x.Name, x.Type.ToDisplayString(), x.IsNullable())).ToArray(),
-                        false, true))
+                        false, false))
                 .ToArray();
 
             var info = new UserControlConstructorsInfo(
