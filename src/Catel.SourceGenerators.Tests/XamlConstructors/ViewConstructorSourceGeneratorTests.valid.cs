@@ -9,29 +9,30 @@
     using VerifyNUnit;
 
     [TestFixture]
-    public partial class UserControlConstructorSourceGeneratorTests
+    public partial class ViewConstructorSourceGeneratorTests
     {
         [Test]
-        public async Task Generates_Constructors_When_No_Constructors()
+        public async Task Generates_Empty_Constructor_And_Attributes_For_UserControl()
         {
-            var driver = BuildClassWithoutConstructorsDriver();
+            var driver = BuildConstructorWithParametersDriver();
 
             await Verifier.Verify(driver);
         }
 
-        private GeneratorDriver BuildClassWithoutConstructorsDriver()
+        private GeneratorDriver BuildConstructorWithParametersDriver()
         {
             var userControlSource = @"
 using System.Windows.Controls;
 using Catel.IoC;
-using Catel.MVVM;
 
 namespace MyNamespace
 {
-    public partial class MyUserControl : UserControlBase
+    public partial class MyUserControl : Catel.Windows.Controls.UserControl
     {
-        static MyUserControl()
+        public MyUserControl(ILogger<MyUserControl> logger, IUserControlWrapperService userControlWrapperService)
+            : base(logger, userControlWrapperService)
         {
+            InitializeComponent();
         }
     }
 
@@ -44,29 +45,10 @@ namespace MyNamespace
 
     public interface ILogger<T> {}
     public interface IUserControlWrapperService {}
-
-    public abstract class UserControlBase : Catel.Windows.Controls.UserControl
-    {
-        protected MyUserControl(ILogger<MyUserControl> logger, IUserControlWrapperService userControlWrapperService)
-        {
-        }
-
-        protected MyUserControl(IViewModel? viewModel, ILogger<MyUserControl> logger, IUserControlWrapperService userControlWrapperService)
-        {
-        }
-    }
 }
 ";
 
             var iocContainerSource = @"
-namespace Catel.MVVM
-{
-    public interface IViewModel
-    {
-
-    }
-}
-
 namespace Catel.Windows.Controls
 {
     public class UserControl : System.Windows.Controls.UserControl
@@ -94,7 +76,7 @@ namespace Catel.IoC
                 iocContainerSource
             }.Select(x => CSharpSyntaxTree.ParseText(x)));
 
-            var generator = new UserControlConstructorsSourceGenerator();
+            var generator = new ViewConstructorsSourceGenerator();
 
             var driver = CSharpGeneratorDriver.Create(generator);
             return driver.RunGenerators(compilation);

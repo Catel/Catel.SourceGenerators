@@ -3,7 +3,7 @@
     using System;
     using System.Collections.Generic;
 
-    public readonly record struct UserControlConstructorsInfo : IEquatable<UserControlConstructorsInfo>
+    public readonly record struct ViewConstructorsInfo : IEquatable<ViewConstructorsInfo>
     {
         public readonly string FileName;
         public readonly string NamespaceName;
@@ -11,7 +11,7 @@
         public readonly bool CreateStaticConstructor;
         public readonly EquatableArray<ConstructorInfo> Constructors;
 
-        public UserControlConstructorsInfo(string fileName, string namespaceName, string className, 
+        public ViewConstructorsInfo(string fileName, string namespaceName, string className, 
             bool createStaticConstructor, IReadOnlyList<ConstructorInfo> constructors)
         {
             FileName = fileName;
@@ -21,7 +21,7 @@
             Constructors = new(constructors);
         }
 
-        public bool Equals(UserControlConstructorsInfo other)
+        public bool Equals(ViewConstructorsInfo other)
         {
             return NamespaceName == other.NamespaceName &&
                    ClassName == other.ClassName &&

@@ -10,7 +10,7 @@
     using Microsoft.CodeAnalysis.Text;
 
     [Generator]
-    public class UserControlConstructorsSourceGenerator : IIncrementalGenerator
+    public class ViewConstructorsSourceGenerator : IIncrementalGenerator
     {
         //private bool _isIoCContainerAvailable = false;
 
@@ -63,7 +63,7 @@
             return true;
         }
 
-        private static UserControlConstructorsInfo? Transform(GeneratorSyntaxContext context)
+        private static ViewConstructorsInfo? Transform(GeneratorSyntaxContext context)
         {
             var semanticModel = context.SemanticModel;
             if (semanticModel.IsCatelAssembly())
@@ -164,7 +164,7 @@
                         }
                     }
 
-                    return new UserControlConstructorsInfo(
+                    return new ViewConstructorsInfo(
                         classDeclarationSyntax.SyntaxTree.FilePath,
                         classSymbol.ContainingNamespace.ToDisplayString(),
                         classSymbol.Name,
@@ -185,7 +185,7 @@
                         false, false))
                 .ToArray();
 
-            var info = new UserControlConstructorsInfo(
+            var info = new ViewConstructorsInfo(
                 classDeclarationSyntax.SyntaxTree.FilePath,
                 classSymbol.ContainingNamespace.ToDisplayString(),
                 classSymbol.Name,
@@ -194,7 +194,7 @@
             return info;
         }
 
-        private static void Execute(SourceProductionContext sourceProductionContext, UserControlConstructorsInfo? constructorInfo)
+        private static void Execute(SourceProductionContext sourceProductionContext, ViewConstructorsInfo? constructorInfo)
         {
             if (constructorInfo is null)
             {
@@ -220,9 +220,9 @@
             sourceBuilder.AppendLine($"partial class {ctorsInfo.ClassName}");
             sourceBuilder.StartBlock();
 
-            sourceBuilder.AppendResolveServiceMethod("UserControlConstructors");
+            sourceBuilder.AppendResolveServiceMethod("ViewConstructors");
 
-            sourceBuilder.AppendGeneratedCodeAttribute("UserControlConstructors");
+            sourceBuilder.AppendGeneratedCodeAttribute("ViewConstructors");
             sourceBuilder.AppendLine("private static void InitializeViewPropertyMappings()");
             sourceBuilder.StartBlock();
             sourceBuilder.AppendLine("if (CatelEnvironment.IsInDesignMode)");
@@ -237,7 +237,7 @@
 
             if (ctorsInfo.CreateStaticConstructor)
             {
-                sourceBuilder.AppendGeneratedCodeAttribute("UserControlConstructors");
+                sourceBuilder.AppendGeneratedCodeAttribute("ViewConstructors");
                 sourceBuilder.AppendLine($"static {ctorsInfo.ClassName}()");
                 sourceBuilder.StartBlock();
                 sourceBuilder.AppendLine("InitializeViewPropertyMappings();");
@@ -260,7 +260,7 @@
                         sourceBuilder.AppendLine();
                     }
 
-                    sourceBuilder.AppendGeneratedCodeAttribute("UserControlConstructors");
+                    sourceBuilder.AppendGeneratedCodeAttribute("ViewConstructors");
 
                     if (ctorInfo.IsActivatorUtilitiesConstructor)
                     {
@@ -281,7 +281,7 @@
                 else
                 {
                     // Generate empty constructor
-                    sourceBuilder.AppendGeneratedCodeAttribute("UserControlConstructors");
+                    sourceBuilder.AppendGeneratedCodeAttribute("ViewConstructors");
                     sourceBuilder.AppendLine($"public {ctorsInfo.ClassName}()");
                     sourceBuilder.Append("    : this(");
                     sourceBuilder.Append(string.Join(", ", ctorInfo.Parameters.Select(p =>
@@ -315,7 +315,7 @@
                 fileName = ctorsInfo.ClassName;
             }
 
-            sourceProductionContext.AddSource($"{fileName}_UserControlConstructors.g.cs", SourceText.From(sourceBuilder.ToString(), Encoding.UTF8));
+            sourceProductionContext.AddSource($"{fileName}_ViewConstructors.g.cs", SourceText.From(sourceBuilder.ToString(), Encoding.UTF8));
         }
     }
 }
