@@ -101,7 +101,8 @@
                 if (!isCatelView)
                 {
                     if (displayString.Contains("Catel.Windows.Controls.UserControl") ||
-                        displayString.Contains("Catel.Windows.DataWindow"))
+                        displayString.Contains("Catel.Windows.DataWindow") ||
+                        displayString.Contains("Catel.Windows.Window"))
                     {
                         isCatelView = true;
                     }
