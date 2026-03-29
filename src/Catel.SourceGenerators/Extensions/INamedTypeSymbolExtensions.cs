@@ -1,48 +1,59 @@
-﻿namespace Catel.SourceGenerators
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Linq;
-    using System.Text;
-    using System.Threading;
-    using Microsoft.CodeAnalysis;
-    using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿namespace Catel.SourceGenerators;
 
-    internal static class INamedTypeSymbolExtensions
+using System.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+
+internal static class INamedTypeSymbolExtensions
+{
+    public static bool HasStaticConstructorWithContent(this INamedTypeSymbol namedTypeSymbol)
     {
-        public static bool HasStaticConstructorWithContent(this INamedTypeSymbol namedTypeSymbol)
+        var staticCtor = namedTypeSymbol.Constructors.FirstOrDefault(x => x.IsStatic);
+        if (staticCtor is null)
         {
-            var staticCtor = namedTypeSymbol.Constructors.FirstOrDefault(x => x.IsStatic);
-            if (staticCtor is null)
+            return false;
+        }
+
+        var syntaxReferences = staticCtor.DeclaringSyntaxReferences;
+
+        foreach (var syntaxReference in syntaxReferences)
+        {
+            var constructorDeclarationSyntax = syntaxReference.GetSyntax() as ConstructorDeclarationSyntax;
+            if (constructorDeclarationSyntax is null)
+            {
+                continue;
+            }
+
+            var body = constructorDeclarationSyntax.Body;
+            if (body is null)
             {
                 return false;
             }
 
-            var syntaxReferences = staticCtor.DeclaringSyntaxReferences;
-
-            foreach (var syntaxReference in syntaxReferences)
+            foreach (var childNode in body.ChildNodes())
             {
-                var constructorDeclarationSyntax = syntaxReference.GetSyntax() as ConstructorDeclarationSyntax;
-                if (constructorDeclarationSyntax is null)
-                {
-                    continue;
-                }
+                // We found at least 1 child, thus body
+                return true;
+            }
+        }
 
-                var body = constructorDeclarationSyntax.Body;
-                if (body is null)
-                {
-                    return false;
-                }
+        return false;
+    }
 
-                foreach (var childNode in body.ChildNodes())
-                {
-                    // We found at least 1 child, thus body
-                    return true;
-                }
+    public static bool DerivesFromBaseClass(this INamedTypeSymbol classSymbol, string typeName)
+    {
+        var baseType = classSymbol.BaseType;
+        while (baseType is not null)
+        {
+            var displayString = baseType.ToDisplayString();
+            if (displayString == typeName)
+            {
+                return true;
             }
 
-            return false;
+            baseType = baseType.BaseType;
         }
+
+        return false;
     }
 }

@@ -73,19 +73,7 @@
                 return null;
             }
 
-            var baseType = classSymbol.BaseType;
-            while (baseType is not null)
-            {
-                var displayString = baseType.ToDisplayString();
-                if (displayString == "System.Windows.Markup.MarkupExtension")
-                {
-                    break;
-                }
-
-                baseType = baseType.BaseType;
-            }
-
-            if (baseType is null)
+            if (!classSymbol.DerivesFromBaseClass("System.Windows.Markup.MarkupExtension"))
             {
                 return null;
             }

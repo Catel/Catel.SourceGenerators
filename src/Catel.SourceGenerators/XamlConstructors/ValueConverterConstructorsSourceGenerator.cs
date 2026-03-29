@@ -72,6 +72,12 @@
                 return null;
             }
 
+            // Already handled by markup extension constructor source generator
+            if (classSymbol.DerivesFromBaseClass("System.Windows.Markup.MarkupExtension"))
+            {
+                return null;
+            }
+
             var emptyClassConstructor = classSymbol.Constructors.FirstOrDefault(x => !x.IsStatic && x.Parameters.Length == 0);
             if (emptyClassConstructor is not null)
             {
