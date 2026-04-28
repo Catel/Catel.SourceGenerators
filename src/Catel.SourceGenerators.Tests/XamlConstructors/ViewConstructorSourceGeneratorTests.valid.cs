@@ -16,7 +16,8 @@
         {
             var driver = BuildConstructorWithParametersDriver();
 
-            await Verifier.Verify(driver);
+            await Verifier.Verify(driver)
+                .ScrubAssemblyVersion();
         }
 
         private GeneratorDriver BuildConstructorWithParametersDriver()
