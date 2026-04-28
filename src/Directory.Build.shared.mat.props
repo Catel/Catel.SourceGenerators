@@ -1,0 +1,16 @@
+<Project>
+  <!-- 
+    This file applies to projects when it gets imported explicitly using the line below:
+
+    <Import Project="$(MSBuildProjectDirectory)\..\Directory.Build.shared.mat.props" Condition="Exists('$(MSBuildProjectDirectory)\..\Directory.Build.shared.mat.props')" />
+  -->
+
+  <!-- Multilingual App Toolkit is retired, configuration and includes are no longer required, only the itemgroup is -->
+
+  <ItemGroup>
+    <_ResxFiles Remove="Properties\*.resx" />
+    <None Remove="MultilingualResources\*.xlf" />
+    <XliffResource Include="MultilingualResources\*.xlf" />
+  </ItemGroup>
+  
+</Project>
