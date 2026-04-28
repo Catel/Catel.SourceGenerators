@@ -16,7 +16,8 @@
         {
             var driver = BuildClassWithoutConstructorsDriver();
 
-            await Verifier.Verify(driver);
+            await Verifier.Verify(driver)
+                .ScrubAssemblyVersion();
         }
 
         private GeneratorDriver BuildClassWithoutConstructorsDriver()

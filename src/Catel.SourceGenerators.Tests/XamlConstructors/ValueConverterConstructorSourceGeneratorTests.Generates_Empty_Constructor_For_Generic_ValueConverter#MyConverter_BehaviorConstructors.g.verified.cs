@@ -10,7 +10,7 @@ namespace MyNamespace
 {
     partial class MyConverter
     {
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Catel.ValueConverterConstructors", "1.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Catel.ValueConverterConstructors", "{AssemblyVersion}")]
         private static T GetService<T>()
             where T : class
         {
@@ -22,7 +22,7 @@ namespace MyNamespace
             return Catel.IoC.IoCContainer.ServiceProvider.GetRequiredService<T>();
         }
 
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Catel.ValueConverterConstructors", "1.0.0.0")]
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Catel.ValueConverterConstructors", "{AssemblyVersion}")]
         public MyConverter()
             : this(GetService<ILanguageService>())
         {
