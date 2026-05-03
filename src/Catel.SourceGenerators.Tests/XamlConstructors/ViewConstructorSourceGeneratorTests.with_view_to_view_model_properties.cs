@@ -23,6 +23,7 @@
         private GeneratorDriver BuildViewWithViewToViewModelPropertiesDriver()
         {
             var userControlSource = @"
+using System.Windows;
 using System.Windows.Controls;
 using Catel.IoC;
 using Catel.MVVM;
@@ -31,11 +32,25 @@ namespace MyNamespace
 {
     public partial class MyUserControl : Catel.Windows.Controls.UserControl
     {
-        [ViewToViewModel]
-        public string Title { get; set; }
+        public static readonly DependencyProperty TitleProperty =
+            DependencyProperty.Register(nameof(Title), typeof(string), typeof(MyUserControl));
 
         [ViewToViewModel]
-        public int Count { get; set; }
+        public string Title
+        {
+            get => (string)GetValue(TitleProperty);
+            set => SetValue(TitleProperty, value);
+        }
+
+        public static readonly DependencyProperty CountProperty =
+            DependencyProperty.Register(nameof(Count), typeof(int), typeof(MyUserControl));
+
+        [ViewToViewModel]
+        public int Count
+        {
+            get => (int)GetValue(CountProperty);
+            set => SetValue(CountProperty, value);
+        }
 
         public string NotMapped { get; set; }
     }
@@ -53,6 +68,20 @@ namespace MyNamespace
 ";
 
             var iocContainerSource = @"
+namespace System.Windows
+{
+    public sealed class DependencyProperty
+    {
+        public static DependencyProperty Register(string name, System.Type propertyType, System.Type ownerType) => new DependencyProperty();
+    }
+
+    public class DependencyObject
+    {
+        protected object GetValue(DependencyProperty dp) => throw new System.NotImplementedException();
+        protected void SetValue(DependencyProperty dp, object value) {}
+    }
+}
+
 namespace Catel.MVVM
 {
     public interface IViewModel

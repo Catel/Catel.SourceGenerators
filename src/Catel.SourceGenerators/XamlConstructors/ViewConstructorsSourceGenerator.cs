@@ -12,6 +12,7 @@
     internal static class ViewToViewModelAttributeHelper
     {
         internal const string AttributeFullName = "Catel.MVVM.ViewToViewModelAttribute";
+        private const string DependencyPropertyTypeName = "System.Windows.DependencyProperty";
 
         internal static List<string> GetViewToViewModelProperties(INamedTypeSymbol classSymbol)
         {
@@ -34,7 +35,7 @@
                     {
                         var hasAttr = propertySymbol.GetAttributes()
                             .Any(a => a.AttributeClass?.ToDisplayString() == AttributeFullName);
-                        if (hasAttr)
+                        if (hasAttr && IsDependencyProperty(currentType, propertySymbol.Name))
                         {
                             properties.Add(propertySymbol.Name);
                         }
@@ -45,6 +46,23 @@
             }
 
             return properties;
+        }
+
+        private static bool IsDependencyProperty(INamedTypeSymbol classSymbol, string propertyName)
+        {
+            var dependencyPropertyFieldName = propertyName + "Property";
+
+            foreach (var member in classSymbol.GetMembers(dependencyPropertyFieldName))
+            {
+                if (member is IFieldSymbol fieldSymbol &&
+                    fieldSymbol.IsStatic &&
+                    fieldSymbol.Type.ToDisplayString() == DependencyPropertyTypeName)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 
@@ -277,7 +295,7 @@
             if (ctorsInfo.ViewToViewModelProperties.Count > 0)
             {
                 sourceBuilder.AppendLine();
-                sourceBuilder.AppendLine("var viewPropertySelector = IoCContainer.ServiceProvider.GetRequiredService<IViewPropertySelector>();");
+                sourceBuilder.AppendLine("var viewPropertySelector = GetService<IViewPropertySelector>();");
                 foreach (var propertyName in ctorsInfo.ViewToViewModelProperties)
                 {
                     sourceBuilder.AppendLine($"viewPropertySelector.AddPropertyToSubscribe(\"{propertyName}\", typeof({ctorsInfo.ClassName}));");

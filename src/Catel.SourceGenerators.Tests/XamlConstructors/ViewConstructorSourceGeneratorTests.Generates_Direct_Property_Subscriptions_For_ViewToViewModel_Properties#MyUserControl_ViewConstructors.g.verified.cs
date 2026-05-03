@@ -32,7 +32,7 @@ namespace MyNamespace
                 return;
             }
 
-            var viewPropertySelector = IoCContainer.ServiceProvider.GetRequiredService<IViewPropertySelector>();
+            var viewPropertySelector = GetService<IViewPropertySelector>();
             viewPropertySelector.AddPropertyToSubscribe("Title", typeof(MyUserControl));
             viewPropertySelector.AddPropertyToSubscribe("Count", typeof(MyUserControl));
         }
