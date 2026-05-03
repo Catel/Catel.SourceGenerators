@@ -10,22 +10,26 @@
         public readonly string ClassName;
         public readonly bool CreateStaticConstructor;
         public readonly EquatableArray<ConstructorInfo> Constructors;
+        public readonly EquatableArray<string> ViewToViewModelProperties;
 
-        public ViewConstructorsInfo(string fileName, string namespaceName, string className, 
-            bool createStaticConstructor, IReadOnlyList<ConstructorInfo> constructors)
+        public ViewConstructorsInfo(string fileName, string namespaceName, string className,
+            bool createStaticConstructor, IReadOnlyList<ConstructorInfo> constructors,
+            IReadOnlyList<string> viewToViewModelProperties)
         {
             FileName = fileName;
             NamespaceName = namespaceName;
             ClassName = className;
             CreateStaticConstructor = createStaticConstructor;
             Constructors = new(constructors);
+            ViewToViewModelProperties = new(viewToViewModelProperties);
         }
 
         public bool Equals(ViewConstructorsInfo other)
         {
             return NamespaceName == other.NamespaceName &&
                    ClassName == other.ClassName &&
-                   Constructors == other.Constructors;
+                   Constructors == other.Constructors &&
+                   ViewToViewModelProperties == other.ViewToViewModelProperties;
         }
 
         public override int GetHashCode()

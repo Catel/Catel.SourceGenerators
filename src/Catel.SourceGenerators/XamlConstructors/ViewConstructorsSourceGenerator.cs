@@ -9,6 +9,45 @@
     using Microsoft.CodeAnalysis.CSharp.Syntax;
     using Microsoft.CodeAnalysis.Text;
 
+    internal static class ViewToViewModelAttributeHelper
+    {
+        internal const string AttributeFullName = "Catel.MVVM.ViewToViewModelAttribute";
+
+        internal static List<string> GetViewToViewModelProperties(INamedTypeSymbol classSymbol)
+        {
+            var properties = new List<string>();
+
+            var currentType = (INamedTypeSymbol?)classSymbol;
+            while (currentType is not null)
+            {
+                var displayString = currentType.ToDisplayString();
+                if (displayString.StartsWith("Catel.") ||
+                    displayString.StartsWith("System.") ||
+                    displayString.StartsWith("Microsoft."))
+                {
+                    break;
+                }
+
+                foreach (var member in currentType.GetMembers())
+                {
+                    if (member is IPropertySymbol propertySymbol)
+                    {
+                        var hasAttr = propertySymbol.GetAttributes()
+                            .Any(a => a.AttributeClass?.ToDisplayString() == AttributeFullName);
+                        if (hasAttr)
+                        {
+                            properties.Add(propertySymbol.Name);
+                        }
+                    }
+                }
+
+                currentType = currentType.BaseType;
+            }
+
+            return properties;
+        }
+    }
+
     [Generator]
     public class ViewConstructorsSourceGenerator : IIncrementalGenerator
     {
@@ -124,6 +163,9 @@
             }
 
             var emptyClassConstructor = classSymbol.InstanceConstructors.FirstOrDefault(x => x.Parameters.Length == 0);
+
+            var viewToViewModelProperties = ViewToViewModelAttributeHelper.GetViewToViewModelProperties(classSymbol);
+
             if (emptyClassConstructor is not null)
             {
                 // Has parameterless ctor already, but could be implicit
@@ -169,7 +211,8 @@
                         classSymbol.ContainingNamespace.ToDisplayString(),
                         classSymbol.Name,
                         isCatelView && !classSymbol.HasStaticConstructorWithContent(),
-                        ctors);
+                        ctors,
+                        viewToViewModelProperties);
                 }
 
                 return null;
@@ -190,7 +233,8 @@
                 classSymbol.ContainingNamespace.ToDisplayString(),
                 classSymbol.Name,
                 isCatelView && !classSymbol.HasStaticConstructorWithContent(),
-                classConstructors);
+                classConstructors,
+                viewToViewModelProperties);
             return info;
         }
 
@@ -229,8 +273,17 @@
             sourceBuilder.StartBlock();
             sourceBuilder.AppendLine("return;");
             sourceBuilder.EndBlock();
-            sourceBuilder.AppendLine();
-            sourceBuilder.AppendLine($"typeof({ctorsInfo.ClassName}).AutoDetectViewPropertiesToSubscribe(IoCContainer.ServiceProvider.GetRequiredService<IViewPropertySelector>());");
+
+            if (ctorsInfo.ViewToViewModelProperties.Count > 0)
+            {
+                sourceBuilder.AppendLine();
+                sourceBuilder.AppendLine("var viewPropertySelector = IoCContainer.ServiceProvider.GetRequiredService<IViewPropertySelector>();");
+                foreach (var propertyName in ctorsInfo.ViewToViewModelProperties)
+                {
+                    sourceBuilder.AppendLine($"viewPropertySelector.AddPropertyToSubscribe(\"{propertyName}\", typeof({ctorsInfo.ClassName}));");
+                }
+            }
+
             sourceBuilder.EndBlock();
 
             sourceBuilder.AppendLine();

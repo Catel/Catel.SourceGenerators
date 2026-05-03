@@ -31,8 +31,6 @@ namespace MyNamespace
             {
                 return;
             }
-
-            typeof(MyUserControl).AutoDetectViewPropertiesToSubscribe(IoCContainer.ServiceProvider.GetRequiredService<IViewPropertySelector>());
         }
 
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Catel.ViewConstructors", "{AssemblyVersion}")]
