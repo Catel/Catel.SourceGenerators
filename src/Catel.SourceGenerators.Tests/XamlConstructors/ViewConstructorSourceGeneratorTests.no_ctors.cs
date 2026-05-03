@@ -9,10 +9,10 @@
     using VerifyNUnit;
 
     [TestFixture]
-    public partial class ViewConstructorSourceGeneratorTests
+    public partial class ViewCtorGeneratorTests
     {
         [Test]
-        public async Task Generates_Constructors_When_No_Constructors()
+        public async Task Generates_Ctors_When_No_Ctors()
         {
             var driver = BuildClassWithoutConstructorsDriver();
 

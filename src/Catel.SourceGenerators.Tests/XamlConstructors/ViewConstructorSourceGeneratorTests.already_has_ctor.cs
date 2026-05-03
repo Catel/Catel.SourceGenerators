@@ -9,10 +9,10 @@
     using VerifyNUnit;
 
     [TestFixture]
-    public partial class ViewConstructorSourceGeneratorTests
+    public partial class ViewCtorGeneratorTests
     {
         [Test]
-        public async Task Generates_Nothing_When_Already_Has_Empty_Constructor_Parameters()
+        public async Task Generates_Nothing_When_Already_Has_Empty_Ctor()
         {
             var driver = BuildNoOverloadsDriver();
 
