@@ -9,10 +9,10 @@
     using VerifyNUnit;
 
     [TestFixture]
-    public partial class ViewConstructorSourceGeneratorTests
+    public partial class ViewCtorGeneratorTests
     {
         [Test]
-        public async Task Generates_Empty_Constructor_And_Attributes_For_UserControl()
+        public async Task Generates_Empty_Ctor_And_Attrs_For_UserControl()
         {
             var driver = BuildConstructorWithParametersDriver();
 

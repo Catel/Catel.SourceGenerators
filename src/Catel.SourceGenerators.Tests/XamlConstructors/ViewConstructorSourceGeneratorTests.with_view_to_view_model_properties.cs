@@ -9,10 +9,10 @@
     using VerifyNUnit;
 
     [TestFixture]
-    public partial class ViewConstructorSourceGeneratorTests
+    public partial class ViewCtorGeneratorTests
     {
         [Test]
-        public async Task Generates_Direct_Property_Subscriptions_For_ViewToViewModel_Properties()
+        public async Task Generates_ViewToViewModel_Property_Subscriptions()
         {
             var driver = BuildViewWithViewToViewModelPropertiesDriver();
 

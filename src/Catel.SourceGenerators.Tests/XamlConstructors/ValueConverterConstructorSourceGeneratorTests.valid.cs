@@ -9,10 +9,10 @@
     using VerifyNUnit;
 
     [TestFixture]
-    public partial class ValueConverterConstructorSourceGeneratorTests
+    public partial class ValueConvCtorGeneratorTests
     {
         [Test]
-        public async Task Generates_Empty_Constructor_For_Generic_ValueConverter()
+        public async Task Generates_Empty_Ctor_For_Generic_ValueConverter()
         {
             var driver = BuildGenericValueConverterConstructorDriver();
 
