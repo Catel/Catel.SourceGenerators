@@ -11,10 +11,12 @@
         public readonly bool CreateStaticConstructor;
         public readonly EquatableArray<ConstructorInfo> Constructors;
         public readonly EquatableArray<string> ViewToViewModelProperties;
+        public readonly EquatableArray<InjectedServiceInfo> InjectedServices;
 
         public ViewConstructorsInfo(string fileName, string namespaceName, string className,
             bool createStaticConstructor, IReadOnlyList<ConstructorInfo> constructors,
-            IReadOnlyList<string> viewToViewModelProperties)
+            IReadOnlyList<string> viewToViewModelProperties,
+            IReadOnlyList<InjectedServiceInfo> injectedServices)
         {
             FileName = fileName;
             NamespaceName = namespaceName;
@@ -22,6 +24,7 @@
             CreateStaticConstructor = createStaticConstructor;
             Constructors = new(constructors);
             ViewToViewModelProperties = new(viewToViewModelProperties);
+            InjectedServices = new(injectedServices);
         }
 
         public bool Equals(ViewConstructorsInfo other)
@@ -29,7 +32,8 @@
             return NamespaceName == other.NamespaceName &&
                    ClassName == other.ClassName &&
                    Constructors == other.Constructors &&
-                   ViewToViewModelProperties == other.ViewToViewModelProperties;
+                   ViewToViewModelProperties == other.ViewToViewModelProperties &&
+                   InjectedServices == other.InjectedServices;
         }
 
         public override int GetHashCode()

@@ -183,6 +183,7 @@
             var emptyClassConstructor = classSymbol.InstanceConstructors.FirstOrDefault(x => x.Parameters.Length == 0);
 
             var viewToViewModelProperties = ViewToViewModelAttributeHelper.GetViewToViewModelProperties(classSymbol);
+            var injectedServices = InjectedServiceAttributeHelper.GetInjectedServiceFields(classSymbol);
 
             if (emptyClassConstructor is not null)
             {
@@ -230,7 +231,8 @@
                         classSymbol.Name,
                         isCatelView && !classSymbol.HasStaticConstructorWithContent(),
                         ctors,
-                        viewToViewModelProperties);
+                        viewToViewModelProperties,
+                        injectedServices);
                 }
 
                 return null;
@@ -252,7 +254,8 @@
                 classSymbol.Name,
                 isCatelView && !classSymbol.HasStaticConstructorWithContent(),
                 classConstructors,
-                viewToViewModelProperties);
+                viewToViewModelProperties,
+                injectedServices);
             return info;
         }
 
@@ -338,12 +341,18 @@
                         sourceBuilder.AppendLine("[ActivatorUtilitiesConstructor]");
                     }
 
-                    sourceBuilder.AppendLine($"public {ctorsInfo.ClassName}({string.Join(", ", ctorInfo.Parameters.Select(p =>
-                        $"{p.ParameterTypeName} {p.Name}"))})");
+                    // Combine base parameters with injected service parameters
+                    var allParams = ctorInfo.Parameters.Select(p => $"{p.ParameterTypeName} {p.Name}")
+                        .Concat(ctorsInfo.InjectedServices.Select(s => $"{s.TypeName} {s.ParameterName}"));
+                    sourceBuilder.AppendLine($"public {ctorsInfo.ClassName}({string.Join(", ", allParams)})");
                     sourceBuilder.Append("    : base(");
                     sourceBuilder.Append(string.Join(", ", ctorInfo.Parameters.Select(p => p.Name)));
                     sourceBuilder.AppendLine(")");
                     sourceBuilder.StartBlock();
+                    foreach (var service in ctorsInfo.InjectedServices)
+                    {
+                        sourceBuilder.AppendLine($"{service.FieldName} = {service.ParameterName};");
+                    }
                     sourceBuilder.AppendLine("OnInitializingComponent();");
                     sourceBuilder.AppendLine("InitializeComponent();");
                     sourceBuilder.AppendLine("OnInitializedComponent();");
@@ -354,9 +363,10 @@
                     // Generate empty constructor
                     sourceBuilder.AppendGeneratedCodeAttribute("ViewConstructors");
                     sourceBuilder.AppendLine($"public {ctorsInfo.ClassName}()");
+                    var allServiceCalls = ctorInfo.Parameters.Select(p => $"GetService<{p.ParameterTypeName}>()")
+                        .Concat(ctorsInfo.InjectedServices.Select(s => $"GetService<{s.TypeName}>()"));
                     sourceBuilder.Append("    : this(");
-                    sourceBuilder.Append(string.Join(", ", ctorInfo.Parameters.Select(p =>
-                        $"GetService<{p.ParameterTypeName}>()")));
+                    sourceBuilder.Append(string.Join(", ", allServiceCalls));
                     sourceBuilder.AppendLine(")");
                     sourceBuilder.StartBlock();
                     sourceBuilder.EndBlock();

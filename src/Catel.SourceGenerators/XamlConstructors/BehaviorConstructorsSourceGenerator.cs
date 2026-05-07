@@ -91,9 +91,9 @@
             }
 
             var emptyClassConstructor = classSymbol.Constructors.FirstOrDefault(x => !x.IsStatic && x.Parameters.Length == 0);
-            if (emptyClassConstructor is not null)
+            if (emptyClassConstructor is not null && !emptyClassConstructor.IsImplicitlyDeclared)
             {
-                // Has parameterless ctor already
+                // Has explicitly declared parameterless ctor already
                 return null;
             }
 
@@ -105,12 +105,29 @@
             //    Debugger.Launch();
             //}
 
+            var injectedServices = InjectedServiceAttributeHelper.GetInjectedServiceFields(classSymbol);
+
             var constructors = classDeclarationSyntax.Members
                 .Where(x => x is ConstructorDeclarationSyntax ctor)
                 .Select(x => (ConstructorDeclarationSyntax)x)
                 .Where(x => x.ParameterList.ChildNodes().Any())
                 .ToArray();
-            if (constructors.Length == 0 || constructors.Length > 1)
+
+            if (constructors.Length == 0)
+            {
+                if (injectedServices.Count == 0)
+                {
+                    return null;
+                }
+
+                // No user-written constructor but has [InjectedService] fields: generate from injected services
+                return new BehaviorConstructorInfo(
+                    classDeclarationSyntax.SyntaxTree.FilePath,
+                    classSymbol.ContainingNamespace.ToDisplayString(), classSymbol.Name,
+                    System.Array.Empty<string>(), injectedServices);
+            }
+
+            if (constructors.Length > 1)
             {
                 return null;
             }
@@ -122,7 +139,8 @@
             var info = new BehaviorConstructorInfo(
                 classDeclarationSyntax.SyntaxTree.FilePath,
                 classSymbol.ContainingNamespace.ToDisplayString(), classSymbol.Name,
-                classConstructor.Parameters.Select(x => x.Type.ToDisplayString()).ToArray());
+                classConstructor.Parameters.Select(x => x.Type.ToDisplayString()).ToArray(),
+                injectedServices);
             return info;
         }
 
@@ -151,15 +169,55 @@
 
             sourceBuilder.AppendResolveServiceMethod("BehaviorConstructors");
 
-            // Generate empty constructor
-            sourceBuilder.AppendGeneratedCodeAttribute("BehaviorConstructors");
-            sourceBuilder.AppendLine($"public {ctorInfo.ClassName}()");
-            sourceBuilder.Append("    : this(");
-            sourceBuilder.Append(string.Join(", ", ctorInfo.ParameterTypeNames.Select(p =>
-                $"GetService<{p}>()")));
-            sourceBuilder.AppendLine(")");
-            sourceBuilder.StartBlock();
-            sourceBuilder.EndBlock();
+            if (ctorInfo.ParameterTypeNames.Count == 0 && ctorInfo.InjectedServices.Count > 0)
+            {
+                // No user-written constructor: generate DI ctor + empty ctor from injected services
+                sourceBuilder.AppendLine("partial void OnConstructing();");
+                sourceBuilder.AppendLine();
+                sourceBuilder.AppendLine("partial void OnConstructed();");
+                sourceBuilder.AppendLine();
+
+                sourceBuilder.AppendGeneratedCodeAttribute("BehaviorConstructors");
+                sourceBuilder.AppendLine($"public {ctorInfo.ClassName}({string.Join(", ", ctorInfo.InjectedServices.Select(s => $"{s.TypeName} {s.ParameterName}"))})");
+                sourceBuilder.StartBlock();
+                foreach (var service in ctorInfo.InjectedServices)
+                {
+                    sourceBuilder.AppendLine($"{service.FieldName} = {service.ParameterName};");
+                }
+                sourceBuilder.AppendLine("OnConstructing();");
+                sourceBuilder.AppendLine("OnConstructed();");
+                sourceBuilder.EndBlock();
+
+                sourceBuilder.AppendLine();
+
+                sourceBuilder.AppendGeneratedCodeAttribute("BehaviorConstructors");
+                sourceBuilder.AppendLine($"public {ctorInfo.ClassName}()");
+                sourceBuilder.Append("    : this(");
+                sourceBuilder.Append(string.Join(", ", ctorInfo.InjectedServices.Select(s =>
+                    $"GetService<{s.TypeName}>()")));
+                sourceBuilder.AppendLine(")");
+                sourceBuilder.StartBlock();
+                sourceBuilder.EndBlock();
+            }
+            else
+            {
+                // Generate empty constructor delegating to user-written (or base) ctor
+                sourceBuilder.AppendLine("partial void OnConstructing();");
+                sourceBuilder.AppendLine();
+                sourceBuilder.AppendLine("partial void OnConstructed();");
+                sourceBuilder.AppendLine();
+
+                var allServiceCalls = ctorInfo.ParameterTypeNames.Select(p => $"GetService<{p}>()")
+                    .Concat(ctorInfo.InjectedServices.Select(s => $"GetService<{s.TypeName}>()"));
+
+                sourceBuilder.AppendGeneratedCodeAttribute("BehaviorConstructors");
+                sourceBuilder.AppendLine($"public {ctorInfo.ClassName}()");
+                sourceBuilder.Append("    : this(");
+                sourceBuilder.Append(string.Join(", ", allServiceCalls));
+                sourceBuilder.AppendLine(")");
+                sourceBuilder.StartBlock();
+                sourceBuilder.EndBlock();
+            }
 
             sourceBuilder.EndBlock();
             sourceBuilder.EndBlock();
