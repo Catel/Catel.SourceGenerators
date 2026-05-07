@@ -78,10 +78,22 @@
                 return null;
             }
 
+            var injectedServices = InjectedServiceAttributeHelper.GetInjectedServiceFields(classSymbol);
+
             var emptyClassConstructor = classSymbol.Constructors.FirstOrDefault(x => !x.IsStatic && x.Parameters.Length == 0);
             if (emptyClassConstructor is not null && !emptyClassConstructor.IsImplicitlyDeclared)
             {
-                // Has explicitly declared parameterless ctor already
+                if (injectedServices.Count > 0)
+                {
+                    return new MarkupExtensionConstructorInfo(
+                        classDeclarationSyntax.SyntaxTree.FilePath,
+                        classSymbol.ContainingNamespace.ToDisplayString(),
+                        classSymbol.Name,
+                        System.Array.Empty<string>(),
+                        injectedServices,
+                        hasConflictingConstructors: true);
+                }
+
                 return null;
             }
 
@@ -92,8 +104,6 @@
             //{
             //    Debugger.Launch();
             //}
-
-            var injectedServices = InjectedServiceAttributeHelper.GetInjectedServiceFields(classSymbol);
 
             var constructors = classDeclarationSyntax.Members
                 .Where(x => x is ConstructorDeclarationSyntax ctor)
@@ -113,6 +123,18 @@
                     classDeclarationSyntax.SyntaxTree.FilePath,
                     classSymbol.ContainingNamespace.ToDisplayString(), classSymbol.Name,
                     System.Array.Empty<string>(), injectedServices);
+            }
+
+            if (injectedServices.Count > 0)
+            {
+                // User has explicit constructors combined with [InjectedService] fields — report an error
+                return new MarkupExtensionConstructorInfo(
+                    classDeclarationSyntax.SyntaxTree.FilePath,
+                    classSymbol.ContainingNamespace.ToDisplayString(),
+                    classSymbol.Name,
+                    System.Array.Empty<string>(),
+                    injectedServices,
+                    hasConflictingConstructors: true);
             }
 
             if (constructors.Length > 1)
@@ -140,6 +162,13 @@
             }
 
             var ctorInfo = constructorInfo.Value;
+
+            if (ctorInfo.HasConflictingConstructors)
+            {
+                sourceProductionContext.ReportDiagnostic(
+                    Diagnostic.Create(Diagnostics.ConflictingConstructorsAndInjectedService, Location.None));
+                return;
+            }
 
             var sourceBuilder = new IndentedStringBuilder();
             sourceBuilder.AppendLine("using System;");
