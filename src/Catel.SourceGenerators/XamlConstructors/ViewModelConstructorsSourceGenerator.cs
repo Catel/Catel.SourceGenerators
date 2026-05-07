@@ -73,15 +73,20 @@ namespace Catel.SourceGenerators.XamlConstructors
             var injectedServices = InjectedServiceAttributeHelper.GetInjectedServiceFields(classSymbol);
             var injectedModel = InjectedModelAttributeHelper.GetInjectedModelMember(classSymbol);
 
+            // Check for explicit constructors
+            var hasExplicitInstanceCtors = classSymbol.InstanceConstructors.Any(c => !c.IsImplicitlyDeclared);
+
             if (injectedServices.Count == 0 && injectedModel is null)
             {
-                return null;
+                // For empty ViewModels, generate a simple constructor only when no explicit constructor exists
+                if (hasExplicitInstanceCtors)
+                {
+                    return null;
+                }
             }
-
-            // Check for conflicting explicit constructors
-            var hasExplicitInstanceCtors = classSymbol.InstanceConstructors.Any(c => !c.IsImplicitlyDeclared);
-            if (hasExplicitInstanceCtors && (injectedServices.Count > 0 || injectedModel is not null))
+            else if (hasExplicitInstanceCtors)
             {
+                // Conflicting explicit constructors alongside injected services/model
                 return new ViewModelConstructorInfo(
                     classDeclarationSyntax.SyntaxTree.FilePath,
                     classSymbol.ContainingNamespace.ToDisplayString(),
