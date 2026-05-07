@@ -20,7 +20,7 @@
             InjectedServices = new(injectedServices);
         }
 
-        public bool Equals(BehaviorConstructorInfo other)
+        public bool Equals(MarkupExtensionConstructorInfo other)
         {
             return NamespaceName == other.NamespaceName &&
                    ClassName == other.ClassName &&
