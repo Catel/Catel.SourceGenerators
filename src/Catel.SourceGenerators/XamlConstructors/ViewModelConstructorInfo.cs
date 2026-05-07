@@ -45,6 +45,11 @@ namespace Catel.SourceGenerators.XamlConstructors
             hashCode.Add(ClassName);
             hashCode.Add(InjectedServices);
             hashCode.Add(HasInjectedModel);
+            if (HasInjectedModel)
+            {
+                hashCode.Add(InjectedModel);
+            }
+
             hashCode.Add(HasConflictingConstructors);
 
             return hashCode.ToHashCode();

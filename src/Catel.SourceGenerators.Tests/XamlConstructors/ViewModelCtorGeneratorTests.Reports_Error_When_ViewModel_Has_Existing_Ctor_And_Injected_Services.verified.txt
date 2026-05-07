@@ -1,12 +1,12 @@
 ﻿{
   Diagnostics: [
     {
-      Message: You cannot combine existing constructors and the `InjectedService` attribute,
+      Message: You cannot combine existing constructors and the `InjectedService` or `InjectedModel` attribute,
       Severity: Error,
       Descriptor: {
         Id: CTL0001,
-        Title: Cannot combine constructors with InjectedService attribute,
-        MessageFormat: You cannot combine existing constructors and the `InjectedService` attribute,
+        Title: Cannot combine constructors with injection attributes,
+        MessageFormat: You cannot combine existing constructors and the `InjectedService` or `InjectedModel` attribute,
         Category: Usage,
         DefaultSeverity: Error,
         IsEnabledByDefault: true
