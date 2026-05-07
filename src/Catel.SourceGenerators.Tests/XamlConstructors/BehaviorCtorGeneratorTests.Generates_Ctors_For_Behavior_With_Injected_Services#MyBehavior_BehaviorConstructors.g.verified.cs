@@ -22,11 +22,17 @@ namespace MyNamespace
             return Catel.IoC.IoCContainer.ServiceProvider.GetRequiredService<T>();
         }
 
+        partial void OnConstructing();
+
+        partial void OnConstructed();
+
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Catel.BehaviorConstructors", "{AssemblyVersion}")]
         public MyBehavior(MyNamespace.IMyService1 myService1, MyNamespace.IMyService2 myService2)
         {
             _myService1 = myService1;
             _myService2 = myService2;
+            OnConstructing();
+            OnConstructed();
         }
 
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Catel.BehaviorConstructors", "{AssemblyVersion}")]
