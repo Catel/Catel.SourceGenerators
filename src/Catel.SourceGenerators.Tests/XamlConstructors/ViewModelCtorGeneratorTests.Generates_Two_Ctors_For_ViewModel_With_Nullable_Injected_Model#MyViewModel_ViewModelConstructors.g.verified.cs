@@ -16,10 +16,10 @@ namespace MyNamespace
         public MyViewModel(MyNamespace.MyModel model, System.IServiceProvider serviceProvider, MyNamespace.IMyService1 myService1, MyNamespace.IMyService2 myService2)
             : base(serviceProvider)
         {
-            OnConstructing();
             Model = model;
             _myService1 = myService1;
             _myService2 = myService2;
+            OnConstructing();
             OnConstructed();
         }
 
@@ -27,9 +27,9 @@ namespace MyNamespace
         public MyViewModel(System.IServiceProvider serviceProvider, MyNamespace.IMyService1 myService1, MyNamespace.IMyService2 myService2)
             : base(serviceProvider)
         {
-            OnConstructing();
             _myService1 = myService1;
             _myService2 = myService2;
+            OnConstructing();
             OnConstructed();
         }
     }

@@ -4,7 +4,7 @@
       Message: You cannot combine existing constructors and the `InjectedService` or `InjectedModel` attribute,
       Severity: Error,
       Descriptor: {
-        Id: CTL0001,
+        Id: CTLSG001,
         Title: Cannot combine constructors with injection attributes,
         MessageFormat: You cannot combine existing constructors and the `InjectedService` or `InjectedModel` attribute,
         Category: Usage,

@@ -189,8 +189,6 @@ namespace Catel.SourceGenerators.XamlConstructors
             sourceBuilder.AppendLine("    : base(serviceProvider)");
             sourceBuilder.StartBlock();
 
-            sourceBuilder.AppendLine("OnConstructing();");
-
             if (includeModel)
             {
                 sourceBuilder.AppendLine($"{ctorInfo.InjectedModel.MemberName} = {ctorInfo.InjectedModel.ParameterName};");
@@ -201,6 +199,7 @@ namespace Catel.SourceGenerators.XamlConstructors
                 sourceBuilder.AppendLine($"{service.FieldName} = {service.ParameterName};");
             }
 
+            sourceBuilder.AppendLine("OnConstructing();");
             sourceBuilder.AppendLine("OnConstructed();");
 
             sourceBuilder.EndBlock();
