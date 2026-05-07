@@ -30,7 +30,7 @@ namespace Catel.SourceGenerators.XamlConstructors
                     var fieldName = fieldSymbol.Name;
                     var parameterName = GetParameterName(fieldName);
                     var typeName = fieldSymbol.Type.ToDisplayString();
-                    var isNullable = typeName.EndsWith("?") || fieldSymbol.NullableAnnotation == NullableAnnotation.Annotated;
+                    var isNullable = fieldSymbol.NullableAnnotation == NullableAnnotation.Annotated;
                     var baseTypeName = typeName.TrimEnd('?');
 
                     return new InjectedModelInfo(fieldName, parameterName, baseTypeName, isNullable);
@@ -56,7 +56,7 @@ namespace Catel.SourceGenerators.XamlConstructors
                     var propName = propertySymbol.Name;
                     var parameterName = GetParameterName(propName);
                     var typeName = propertySymbol.Type.ToDisplayString();
-                    var isNullable = typeName.EndsWith("?") || propertySymbol.NullableAnnotation == NullableAnnotation.Annotated;
+                    var isNullable = propertySymbol.NullableAnnotation == NullableAnnotation.Annotated;
                     var baseTypeName = typeName.TrimEnd('?');
 
                     return new InjectedModelInfo(propName, parameterName, baseTypeName, isNullable);

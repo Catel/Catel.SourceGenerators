@@ -80,7 +80,7 @@ namespace Catel.SourceGenerators.XamlConstructors
 
             // Check for conflicting explicit constructors
             var hasExplicitInstanceCtors = classSymbol.InstanceConstructors.Any(c => !c.IsImplicitlyDeclared);
-            if (hasExplicitInstanceCtors && injectedServices.Count > 0)
+            if (hasExplicitInstanceCtors && (injectedServices.Count > 0 || injectedModel is not null))
             {
                 return new ViewModelConstructorInfo(
                     classDeclarationSyntax.SyntaxTree.FilePath,
