@@ -70,7 +70,7 @@ public class ClassShouldBePartialAnalyzerTests
         "public partial class MyViewModel : Catel.MVVM.ViewModelBase { }")]
     [TestCase(
         "public sealed class MyBehavior : Microsoft.Xaml.Behaviors.Behavior { }",
-        "public partial sealed class MyBehavior : Microsoft.Xaml.Behaviors.Behavior { }")]
+        "public sealed partial class MyBehavior : Microsoft.Xaml.Behaviors.Behavior { }")]
     [TestCase(
         "internal class MyMarkupExtension : System.Windows.Markup.MarkupExtension { }",
         "internal partial class MyMarkupExtension : System.Windows.Markup.MarkupExtension { }")]

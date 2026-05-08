@@ -61,14 +61,12 @@ internal static class PartialClassCandidateDetector
         while (baseType is not null)
         {
             var displayString = baseType.ToDisplayString();
-            if (!isCatelView)
+            if (!isCatelView &&
+                (displayString.Contains("Catel.Windows.Controls.UserControl") ||
+                 displayString.Contains("Catel.Windows.DataWindow") ||
+                 displayString.Contains("Catel.Windows.Window")))
             {
-                if (displayString.Contains("Catel.Windows.Controls.UserControl") ||
-                    displayString.Contains("Catel.Windows.DataWindow") ||
-                    displayString.Contains("Catel.Windows.Window"))
-                {
-                    isCatelView = true;
-                }
+                isCatelView = true;
             }
 
             if (displayString == "System.Windows.Controls.Control" ||

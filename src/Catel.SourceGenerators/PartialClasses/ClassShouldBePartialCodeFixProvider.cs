@@ -66,18 +66,6 @@ public class ClassShouldBePartialCodeFixProvider : CodeFixProvider
 
     private static int GetPartialInsertionIndex(SyntaxTokenList modifiers)
     {
-        var index = 0;
-
-        while (index < modifiers.Count &&
-               (modifiers[index].IsKind(SyntaxKind.PublicKeyword) ||
-                modifiers[index].IsKind(SyntaxKind.InternalKeyword) ||
-                modifiers[index].IsKind(SyntaxKind.PrivateKeyword) ||
-                modifiers[index].IsKind(SyntaxKind.ProtectedKeyword) ||
-                modifiers[index].IsKind(SyntaxKind.NewKeyword)))
-        {
-            index++;
-        }
-
-        return index;
+        return modifiers.Count;
     }
 }
