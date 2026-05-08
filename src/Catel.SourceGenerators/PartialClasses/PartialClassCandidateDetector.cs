@@ -2,9 +2,24 @@ namespace Catel.SourceGenerators;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Collections.Generic;
 
 internal static class PartialClassCandidateDetector
 {
+    private static readonly HashSet<string> CatelViewBaseTypeNames =
+    [
+        "Catel.Windows.Controls.UserControl",
+        "Catel.Windows.DataWindow",
+        "Catel.Windows.Window"
+    ];
+
+    private static readonly HashSet<string> ViewTerminalTypeNames =
+    [
+        "System.Windows.Controls.Control",
+        "System.Windows.Controls.UserControl",
+        "System.Windows.Window"
+    ];
+
     public static string? GetSupportedTypeDescription(SemanticModel semanticModel, ClassDeclarationSyntax classDeclarationSyntax)
     {
         var classSymbol = semanticModel.GetDeclaredSymbol(classDeclarationSyntax) as INamedTypeSymbol;
@@ -43,7 +58,7 @@ internal static class PartialClassCandidateDetector
         var baseType = classSymbol.BaseType;
         while (baseType is not null)
         {
-            if (baseType.ToDisplayString() == "Microsoft.Xaml.Behaviors.Behavior")
+            if (GetFullTypeName(baseType) == "Microsoft.Xaml.Behaviors.Behavior")
             {
                 return true;
             }
@@ -56,29 +71,30 @@ internal static class PartialClassCandidateDetector
 
     private static bool IsView(INamedTypeSymbol classSymbol)
     {
-        var isCatelView = false;
+        var hasCatelViewBase = false;
         var baseType = classSymbol.BaseType;
         while (baseType is not null)
         {
-            var displayString = baseType.ToDisplayString();
-            if (!isCatelView &&
-                (displayString.Contains("Catel.Windows.Controls.UserControl") ||
-                 displayString.Contains("Catel.Windows.DataWindow") ||
-                 displayString.Contains("Catel.Windows.Window")))
+            var typeName = GetFullTypeName(baseType);
+            if (!hasCatelViewBase && CatelViewBaseTypeNames.Contains(typeName))
             {
-                isCatelView = true;
+                hasCatelViewBase = true;
             }
 
-            if (displayString == "System.Windows.Controls.Control" ||
-                displayString == "System.Windows.Controls.UserControl" ||
-                displayString == "System.Windows.Window")
+            if (ViewTerminalTypeNames.Contains(typeName))
             {
-                return isCatelView;
+                return hasCatelViewBase;
             }
 
             baseType = baseType.BaseType;
         }
 
         return false;
+    }
+
+    private static string GetFullTypeName(INamedTypeSymbol typeSymbol)
+    {
+        return typeSymbol.ConstructedFrom.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
+            .Replace("global::", string.Empty);
     }
 }
