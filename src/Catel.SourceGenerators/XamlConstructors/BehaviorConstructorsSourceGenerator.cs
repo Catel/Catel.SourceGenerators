@@ -62,9 +62,7 @@ public class BehaviorConstructorsSourceGenerator : IIncrementalGenerator
         }
 
         var className = classSymbol.Name;
-        var classDeclarationName = classSymbol.TypeParameters.Length == 0
-            ? className
-            : $"{className}<{string.Join(", ", classSymbol.TypeParameters.Select(x => x.Name))}>";
+        var classDeclarationName = classSymbol.GetClassDeclarationName();
 
         if (!classDeclarationSyntax.IsPartialType())
         {

@@ -67,4 +67,15 @@ internal static class INamedTypeSymbolExtensions
         return typeSymbol.ConstructedFrom.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
             .Replace("global::", string.Empty);
     }
+
+    public static string GetClassDeclarationName(this INamedTypeSymbol namedTypeSymbol)
+    {
+        var className = namedTypeSymbol.Name;
+        if (namedTypeSymbol.TypeParameters.Length == 0)
+        {
+            return className;
+        }
+
+        return $"{className}<{string.Join(", ", namedTypeSymbol.TypeParameters.Select(x => x.Name))}>";
+    }
 }
