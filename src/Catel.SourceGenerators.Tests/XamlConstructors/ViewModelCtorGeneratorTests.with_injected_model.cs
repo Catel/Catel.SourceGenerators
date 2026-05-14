@@ -1,28 +1,28 @@
-namespace Catel.SourceGenerators.Tests.XamlConstructors
+﻿namespace Catel.SourceGenerators.Tests.XamlConstructors;
+
+using Catel.SourceGenerators.XamlConstructors;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using NUnit.Framework;
+using System.Linq;
+using System.Threading.Tasks;
+using VerifyNUnit;
+
+[TestFixture]
+public partial class ViewModelCtorGeneratorTests
 {
-    using Catel.SourceGenerators.XamlConstructors;
-    using Microsoft.CodeAnalysis;
-    using Microsoft.CodeAnalysis.CSharp;
-    using NUnit.Framework;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using VerifyNUnit;
-
-    [TestFixture]
-    public partial class ViewModelCtorGeneratorTests
+    [Test]
+    public async Task Generates_Ctor_For_ViewModel_With_Injected_Model()
     {
-        [Test]
-        public async Task Generates_Ctor_For_ViewModel_With_Injected_Model()
-        {
-            var driver = BuildViewModelWithInjectedModelDriver();
+        var driver = BuildViewModelWithInjectedModelDriver();
 
-            await Verifier.Verify(driver)
-                .ScrubAssemblyVersion();
-        }
+        await Verifier.Verify(driver)
+            .ScrubAssemblyVersion();
+    }
 
-        private GeneratorDriver BuildViewModelWithInjectedModelDriver()
-        {
-            var viewModelSource = @"
+    private GeneratorDriver BuildViewModelWithInjectedModelDriver()
+    {
+        var viewModelSource = @"
 namespace MyNamespace
 {
     public partial class MyViewModel : Catel.MVVM.ViewModelBase
@@ -43,18 +43,17 @@ namespace MyNamespace
 }
 ";
 
-            var stubSource = BuildStubSource();
+        var stubSource = BuildStubSource();
 
-            var compilation = CSharpCompilation.Create("name", new[]
-            {
-                viewModelSource,
-                stubSource
-            }.Select(x => CSharpSyntaxTree.ParseText(x)));
+        var compilation = CSharpCompilation.Create("name", new[]
+        {
+            viewModelSource,
+            stubSource
+        }.Select(x => CSharpSyntaxTree.ParseText(x)));
 
-            var generator = new ViewModelConstructorsSourceGenerator();
+        var generator = new ViewModelConstructorsSourceGenerator();
 
-            var driver = CSharpGeneratorDriver.Create(generator);
-            return driver.RunGenerators(compilation);
-        }
+        var driver = CSharpGeneratorDriver.Create(generator);
+        return driver.RunGenerators(compilation);
     }
 }

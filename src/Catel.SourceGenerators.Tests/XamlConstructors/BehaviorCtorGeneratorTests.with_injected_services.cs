@@ -1,28 +1,28 @@
-﻿namespace Catel.SourceGenerators.Tests.XamlConstructors
+﻿namespace Catel.SourceGenerators.Tests.XamlConstructors;
+
+using Catel.SourceGenerators.XamlConstructors;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using NUnit.Framework;
+using System.Linq;
+using System.Threading.Tasks;
+using VerifyNUnit;
+
+[TestFixture]
+public partial class BehaviorCtorGeneratorTests
 {
-    using Catel.SourceGenerators.XamlConstructors;
-    using Microsoft.CodeAnalysis;
-    using Microsoft.CodeAnalysis.CSharp;
-    using NUnit.Framework;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using VerifyNUnit;
-
-    [TestFixture]
-    public partial class BehaviorCtorGeneratorTests
+    [Test]
+    public async Task Generates_Ctors_For_Behavior_With_Injected_Services()
     {
-        [Test]
-        public async Task Generates_Ctors_For_Behavior_With_Injected_Services()
-        {
-            var driver = BuildBehaviorWithInjectedServicesDriver();
+        var driver = BuildBehaviorWithInjectedServicesDriver();
 
-            await Verifier.Verify(driver)
-                .ScrubAssemblyVersion();
-        }
+        await Verifier.Verify(driver)
+            .ScrubAssemblyVersion();
+    }
 
-        private GeneratorDriver BuildBehaviorWithInjectedServicesDriver()
-        {
-            var behaviorSource = @"
+    private GeneratorDriver BuildBehaviorWithInjectedServicesDriver()
+    {
+        var behaviorSource = @"
 namespace MyNamespace
 {
     public partial class MyBehavior : Microsoft.Xaml.Behaviors.Behavior<System.Windows.FrameworkElement>
@@ -39,7 +39,7 @@ namespace MyNamespace
 }
 ";
 
-            var stubSource = @"
+        var stubSource = @"
 namespace Microsoft.Xaml.Behaviors
 {
     public abstract class Behavior { }
@@ -65,16 +65,15 @@ namespace Catel.IoC
 }
 ";
 
-            var compilation = CSharpCompilation.Create("name", new[]
-            {
-                behaviorSource,
-                stubSource
-            }.Select(x => CSharpSyntaxTree.ParseText(x)));
+        var compilation = CSharpCompilation.Create("name", new[]
+        {
+            behaviorSource,
+            stubSource
+        }.Select(x => CSharpSyntaxTree.ParseText(x)));
 
-            var generator = new BehaviorConstructorsSourceGenerator();
+        var generator = new BehaviorConstructorsSourceGenerator();
 
-            var driver = CSharpGeneratorDriver.Create(generator);
-            return driver.RunGenerators(compilation);
-        }
+        var driver = CSharpGeneratorDriver.Create(generator);
+        return driver.RunGenerators(compilation);
     }
 }

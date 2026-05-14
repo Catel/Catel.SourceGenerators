@@ -1,28 +1,28 @@
-﻿namespace Catel.SourceGenerators.Tests.XamlConstructors
+﻿namespace Catel.SourceGenerators.Tests.XamlConstructors;
+
+using Catel.SourceGenerators.XamlConstructors;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using NUnit.Framework;
+using System.Linq;
+using System.Threading.Tasks;
+using VerifyNUnit;
+
+[TestFixture]
+public partial class ValueConvCtorGeneratorTests
 {
-    using Catel.SourceGenerators.XamlConstructors;
-    using Microsoft.CodeAnalysis;
-    using Microsoft.CodeAnalysis.CSharp;
-    using NUnit.Framework;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using VerifyNUnit;
-
-    [TestFixture]
-    public partial class ValueConvCtorGeneratorTests
+    [Test]
+    public async Task Generates_Empty_Ctor_For_Generic_ValueConverter()
     {
-        [Test]
-        public async Task Generates_Empty_Ctor_For_Generic_ValueConverter()
-        {
-            var driver = BuildGenericValueConverterConstructorDriver();
+        var driver = BuildGenericValueConverterConstructorDriver();
 
-            await Verifier.Verify(driver)
-                .ScrubAssemblyVersion();
-        }
+        await Verifier.Verify(driver)
+            .ScrubAssemblyVersion();
+    }
 
-        private GeneratorDriver BuildGenericValueConverterConstructorDriver()
-        {
-            var userControlSource = @"
+    private GeneratorDriver BuildGenericValueConverterConstructorDriver()
+    {
+        var userControlSource = @"
 using Catel.IoC;
 
 namespace MyNamespace
@@ -42,7 +42,7 @@ namespace MyNamespace
 }
 ";
 
-            var iocContainerSource = @"
+        var iocContainerSource = @"
 namespace Catel.IoC
 {
     public static class IoCContainer
@@ -56,16 +56,15 @@ namespace Catel.IoC
 }
 ";
 
-            var compilation = CSharpCompilation.Create("name", new[]
-            {
-                userControlSource,
-                iocContainerSource
-            }.Select(x => CSharpSyntaxTree.ParseText(x)));
+        var compilation = CSharpCompilation.Create("name", new[]
+        {
+            userControlSource,
+            iocContainerSource
+        }.Select(x => CSharpSyntaxTree.ParseText(x)));
 
-            var generator = new ValueConverterConstructorsSourceGenerator();
+        var generator = new ValueConverterConstructorsSourceGenerator();
 
-            var driver = CSharpGeneratorDriver.Create(generator);
-            return driver.RunGenerators(compilation);
-        }
+        var driver = CSharpGeneratorDriver.Create(generator);
+        return driver.RunGenerators(compilation);
     }
 }

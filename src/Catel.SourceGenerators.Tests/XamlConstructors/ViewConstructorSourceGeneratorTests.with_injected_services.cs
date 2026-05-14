@@ -1,28 +1,28 @@
-﻿namespace Catel.SourceGenerators.Tests.XamlConstructors
+﻿namespace Catel.SourceGenerators.Tests.XamlConstructors;
+
+using Catel.SourceGenerators.XamlConstructors;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using NUnit.Framework;
+using System.Linq;
+using System.Threading.Tasks;
+using VerifyNUnit;
+
+[TestFixture]
+public partial class ViewCtorGeneratorTests
 {
-    using Catel.SourceGenerators.XamlConstructors;
-    using Microsoft.CodeAnalysis;
-    using Microsoft.CodeAnalysis.CSharp;
-    using NUnit.Framework;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using VerifyNUnit;
-
-    [TestFixture]
-    public partial class ViewCtorGeneratorTests
+    [Test]
+    public async Task Generates_Ctors_For_View_With_Injected_Services()
     {
-        [Test]
-        public async Task Generates_Ctors_For_View_With_Injected_Services()
-        {
-            var driver = BuildViewWithInjectedServicesDriver();
+        var driver = BuildViewWithInjectedServicesDriver();
 
-            await Verifier.Verify(driver)
-                .ScrubAssemblyVersion();
-        }
+        await Verifier.Verify(driver)
+            .ScrubAssemblyVersion();
+    }
 
-        private GeneratorDriver BuildViewWithInjectedServicesDriver()
-        {
-            var userControlSource = @"
+    private GeneratorDriver BuildViewWithInjectedServicesDriver()
+    {
+        var userControlSource = @"
 using Catel.IoC;
 using Catel.MVVM;
 
@@ -58,7 +58,7 @@ namespace MyNamespace
 }
 ";
 
-            var stubSource = @"
+        var stubSource = @"
 namespace Catel
 {
     [System.AttributeUsage(System.AttributeTargets.Field)]
@@ -92,16 +92,15 @@ namespace Catel.IoC
 }
 ";
 
-            var compilation = CSharpCompilation.Create("name", new[]
-            {
-                userControlSource,
-                stubSource
-            }.Select(x => CSharpSyntaxTree.ParseText(x)));
+        var compilation = CSharpCompilation.Create("name", new[]
+        {
+            userControlSource,
+            stubSource
+        }.Select(x => CSharpSyntaxTree.ParseText(x)));
 
-            var generator = new ViewConstructorsSourceGenerator();
+        var generator = new ViewConstructorsSourceGenerator();
 
-            var driver = CSharpGeneratorDriver.Create(generator);
-            return driver.RunGenerators(compilation);
-        }
+        var driver = CSharpGeneratorDriver.Create(generator);
+        return driver.RunGenerators(compilation);
     }
 }

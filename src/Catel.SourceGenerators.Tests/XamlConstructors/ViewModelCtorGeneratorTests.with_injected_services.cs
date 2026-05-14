@@ -1,28 +1,28 @@
-namespace Catel.SourceGenerators.Tests.XamlConstructors
+﻿namespace Catel.SourceGenerators.Tests.XamlConstructors;
+
+using Catel.SourceGenerators.XamlConstructors;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using NUnit.Framework;
+using System.Linq;
+using System.Threading.Tasks;
+using VerifyNUnit;
+
+[TestFixture]
+public partial class ViewModelCtorGeneratorTests
 {
-    using Catel.SourceGenerators.XamlConstructors;
-    using Microsoft.CodeAnalysis;
-    using Microsoft.CodeAnalysis.CSharp;
-    using NUnit.Framework;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using VerifyNUnit;
-
-    [TestFixture]
-    public partial class ViewModelCtorGeneratorTests
+    [Test]
+    public async Task Generates_Ctor_For_ViewModel_With_Injected_Services()
     {
-        [Test]
-        public async Task Generates_Ctor_For_ViewModel_With_Injected_Services()
-        {
-            var driver = BuildViewModelWithInjectedServicesDriver();
+        var driver = BuildViewModelWithInjectedServicesDriver();
 
-            await Verifier.Verify(driver)
-                .ScrubAssemblyVersion();
-        }
+        await Verifier.Verify(driver)
+            .ScrubAssemblyVersion();
+    }
 
-        private GeneratorDriver BuildViewModelWithInjectedServicesDriver()
-        {
-            var viewModelSource = @"
+    private GeneratorDriver BuildViewModelWithInjectedServicesDriver()
+    {
+        var viewModelSource = @"
 namespace MyNamespace
 {
     public partial class MyViewModel : Catel.MVVM.ViewModelBase
@@ -39,23 +39,23 @@ namespace MyNamespace
 }
 ";
 
-            var stubSource = BuildStubSource();
+        var stubSource = BuildStubSource();
 
-            var compilation = CSharpCompilation.Create("name", new[]
-            {
-                viewModelSource,
-                stubSource
-            }.Select(x => CSharpSyntaxTree.ParseText(x)));
-
-            var generator = new ViewModelConstructorsSourceGenerator();
-
-            var driver = CSharpGeneratorDriver.Create(generator);
-            return driver.RunGenerators(compilation);
-        }
-
-        private static string BuildStubSource()
+        var compilation = CSharpCompilation.Create("name", new[]
         {
-            return @"
+            viewModelSource,
+            stubSource
+        }.Select(x => CSharpSyntaxTree.ParseText(x)));
+
+        var generator = new ViewModelConstructorsSourceGenerator();
+
+        var driver = CSharpGeneratorDriver.Create(generator);
+        return driver.RunGenerators(compilation);
+    }
+
+    private static string BuildStubSource()
+    {
+        return @"
 namespace Catel
 {
     [System.AttributeUsage(System.AttributeTargets.Field)]
@@ -75,6 +75,5 @@ namespace Catel.MVVM
     }
 }
 ";
-        }
     }
 }

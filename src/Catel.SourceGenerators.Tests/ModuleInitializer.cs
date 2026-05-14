@@ -1,14 +1,13 @@
-﻿namespace Catel.SourceGenerators.Tests
-{
-    using System.Runtime.CompilerServices;
-    using VerifyTests;
+﻿namespace Catel.SourceGenerators.Tests;
 
-    public class ModuleInitializer
+using System.Runtime.CompilerServices;
+using VerifyTests;
+
+public class ModuleInitializer
+{
+    [ModuleInitializer]
+    public static void Initialize()
     {
-        [ModuleInitializer]
-        public static void Initialize()
-        {
-            VerifySourceGenerators.Initialize();
-        }
+        VerifySourceGenerators.Initialize();
     }
 }

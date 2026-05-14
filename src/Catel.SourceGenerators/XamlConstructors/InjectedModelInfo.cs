@@ -1,20 +1,19 @@
-namespace Catel.SourceGenerators.XamlConstructors
+﻿namespace Catel.SourceGenerators.XamlConstructors;
+
+using System;
+
+public readonly record struct InjectedModelInfo : IEquatable<InjectedModelInfo>
 {
-    using System;
+    public readonly string MemberName;
+    public readonly string ParameterName;
+    public readonly string TypeName;
+    public readonly bool IsNullable;
 
-    public readonly record struct InjectedModelInfo : IEquatable<InjectedModelInfo>
+    public InjectedModelInfo(string memberName, string parameterName, string typeName, bool isNullable)
     {
-        public readonly string MemberName;
-        public readonly string ParameterName;
-        public readonly string TypeName;
-        public readonly bool IsNullable;
-
-        public InjectedModelInfo(string memberName, string parameterName, string typeName, bool isNullable)
-        {
-            MemberName = memberName;
-            ParameterName = parameterName;
-            TypeName = typeName;
-            IsNullable = isNullable;
-        }
+        MemberName = memberName;
+        ParameterName = parameterName;
+        TypeName = typeName;
+        IsNullable = isNullable;
     }
 }

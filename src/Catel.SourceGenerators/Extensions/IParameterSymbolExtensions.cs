@@ -1,12 +1,11 @@
-﻿namespace Catel.SourceGenerators
-{
-    using Microsoft.CodeAnalysis;
+﻿namespace Catel.SourceGenerators;
 
-    internal static class IParameterSymbolExtensions
+using Microsoft.CodeAnalysis;
+
+internal static class IParameterSymbolExtensions
+{
+    public static bool IsNullable(this Microsoft.CodeAnalysis.IParameterSymbol parameterSymbol)
     {
-        public static bool IsNullable(this Microsoft.CodeAnalysis.IParameterSymbol parameterSymbol)
-        {
-            return parameterSymbol.NullableAnnotation == NullableAnnotation.Annotated;
-        }
+        return parameterSymbol.NullableAnnotation == NullableAnnotation.Annotated;
     }
 }

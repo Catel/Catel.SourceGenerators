@@ -1,14 +1,13 @@
-﻿namespace Catel.SourceGenerators
-{
-    using System.Linq;
-    using Microsoft.CodeAnalysis;
-    using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿namespace Catel.SourceGenerators;
 
-    internal static class ClassDeclarationSyntaxExtensions
+using System.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+
+internal static class ClassDeclarationSyntaxExtensions
+{
+    public static bool IsPartialType(this ClassDeclarationSyntax classDeclaration)
     {
-        public static bool IsPartialType(this ClassDeclarationSyntax classDeclaration)
-        {
-            return classDeclaration.Modifiers.Any(m => m.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.PartialKeyword));
-        }
+        return classDeclaration.Modifiers.Any(m => m.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.PartialKeyword));
     }
 }

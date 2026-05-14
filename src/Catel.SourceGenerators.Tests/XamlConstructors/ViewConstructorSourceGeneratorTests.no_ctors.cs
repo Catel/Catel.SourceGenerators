@@ -1,28 +1,28 @@
-﻿namespace Catel.SourceGenerators.Tests.XamlConstructors
+﻿namespace Catel.SourceGenerators.Tests.XamlConstructors;
+
+using Catel.SourceGenerators.XamlConstructors;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using NUnit.Framework;
+using System.Linq;
+using System.Threading.Tasks;
+using VerifyNUnit;
+
+[TestFixture]
+public partial class ViewCtorGeneratorTests
 {
-    using Catel.SourceGenerators.XamlConstructors;
-    using Microsoft.CodeAnalysis;
-    using Microsoft.CodeAnalysis.CSharp;
-    using NUnit.Framework;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using VerifyNUnit;
-
-    [TestFixture]
-    public partial class ViewCtorGeneratorTests
+    [Test]
+    public async Task Generates_Ctors_When_No_Ctors()
     {
-        [Test]
-        public async Task Generates_Ctors_When_No_Ctors()
-        {
-            var driver = BuildClassWithoutConstructorsDriver();
+        var driver = BuildClassWithoutConstructorsDriver();
 
-            await Verifier.Verify(driver)
-                .ScrubAssemblyVersion();
-        }
+        await Verifier.Verify(driver)
+            .ScrubAssemblyVersion();
+    }
 
-        private GeneratorDriver BuildClassWithoutConstructorsDriver()
-        {
-            var userControlSource = @"
+    private GeneratorDriver BuildClassWithoutConstructorsDriver()
+    {
+        var userControlSource = @"
 using System.Windows.Controls;
 using Catel.IoC;
 using Catel.MVVM;
@@ -59,7 +59,7 @@ namespace MyNamespace
 }
 ";
 
-            var iocContainerSource = @"
+        var iocContainerSource = @"
 namespace Catel.MVVM
 {
     public interface IViewModel
@@ -89,16 +89,15 @@ namespace Catel.IoC
 }
 ";
 
-            var compilation = CSharpCompilation.Create("name", new[]
-            {
-                userControlSource,
-                iocContainerSource
-            }.Select(x => CSharpSyntaxTree.ParseText(x)));
+        var compilation = CSharpCompilation.Create("name", new[]
+        {
+            userControlSource,
+            iocContainerSource
+        }.Select(x => CSharpSyntaxTree.ParseText(x)));
 
-            var generator = new ViewConstructorsSourceGenerator();
+        var generator = new ViewConstructorsSourceGenerator();
 
-            var driver = CSharpGeneratorDriver.Create(generator);
-            return driver.RunGenerators(compilation);
-        }
+        var driver = CSharpGeneratorDriver.Create(generator);
+        return driver.RunGenerators(compilation);
     }
 }

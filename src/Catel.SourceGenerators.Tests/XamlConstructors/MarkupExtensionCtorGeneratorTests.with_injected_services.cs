@@ -1,28 +1,28 @@
-﻿namespace Catel.SourceGenerators.Tests.XamlConstructors
+﻿namespace Catel.SourceGenerators.Tests.XamlConstructors;
+
+using Catel.SourceGenerators.XamlConstructors;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using NUnit.Framework;
+using System.Linq;
+using System.Threading.Tasks;
+using VerifyNUnit;
+
+[TestFixture]
+public partial class MarkupExtensionCtorGeneratorTests
 {
-    using Catel.SourceGenerators.XamlConstructors;
-    using Microsoft.CodeAnalysis;
-    using Microsoft.CodeAnalysis.CSharp;
-    using NUnit.Framework;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using VerifyNUnit;
-
-    [TestFixture]
-    public partial class MarkupExtensionCtorGeneratorTests
+    [Test]
+    public async Task Generates_Ctors_For_MarkupExtension_With_Injected_Services()
     {
-        [Test]
-        public async Task Generates_Ctors_For_MarkupExtension_With_Injected_Services()
-        {
-            var driver = BuildMarkupExtensionWithInjectedServicesDriver();
+        var driver = BuildMarkupExtensionWithInjectedServicesDriver();
 
-            await Verifier.Verify(driver)
-                .ScrubAssemblyVersion();
-        }
+        await Verifier.Verify(driver)
+            .ScrubAssemblyVersion();
+    }
 
-        private GeneratorDriver BuildMarkupExtensionWithInjectedServicesDriver()
-        {
-            var markupExtensionSource = @"
+    private GeneratorDriver BuildMarkupExtensionWithInjectedServicesDriver()
+    {
+        var markupExtensionSource = @"
 namespace MyNamespace
 {
     public partial class MyMarkupExtension : System.Windows.Markup.MarkupExtension
@@ -41,7 +41,7 @@ namespace MyNamespace
 }
 ";
 
-            var stubSource = @"
+        var stubSource = @"
 namespace System.Windows.Markup
 {
     public abstract class MarkupExtension
@@ -69,16 +69,15 @@ namespace Catel.IoC
 }
 ";
 
-            var compilation = CSharpCompilation.Create("name", new[]
-            {
-                markupExtensionSource,
-                stubSource
-            }.Select(x => CSharpSyntaxTree.ParseText(x)));
+        var compilation = CSharpCompilation.Create("name", new[]
+        {
+            markupExtensionSource,
+            stubSource
+        }.Select(x => CSharpSyntaxTree.ParseText(x)));
 
-            var generator = new MarkupExtensionConstructorsSourceGenerator();
+        var generator = new MarkupExtensionConstructorsSourceGenerator();
 
-            var driver = CSharpGeneratorDriver.Create(generator);
-            return driver.RunGenerators(compilation);
-        }
+        var driver = CSharpGeneratorDriver.Create(generator);
+        return driver.RunGenerators(compilation);
     }
 }
