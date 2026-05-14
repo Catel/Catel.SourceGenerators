@@ -61,6 +61,11 @@ public class BehaviorConstructorsSourceGenerator : IIncrementalGenerator
             return null;
         }
 
+        var className = classSymbol.Name;
+        var classDeclarationName = classSymbol.TypeParameters.Length == 0
+            ? className
+            : $"{className}<{string.Join(", ", classSymbol.TypeParameters.Select(x => x.Name))}>";
+
         if (!classDeclarationSyntax.IsPartialType())
         {
             return null;
@@ -92,7 +97,8 @@ public class BehaviorConstructorsSourceGenerator : IIncrementalGenerator
                 return new BehaviorConstructorInfo(
                     classDeclarationSyntax.SyntaxTree.FilePath,
                     classSymbol.ContainingNamespace.ToDisplayString(),
-                    classSymbol.Name,
+                    className,
+                    classDeclarationName,
                     System.Array.Empty<string>(),
                     injectedServices,
                     hasConflictingConstructors: true);
@@ -125,7 +131,9 @@ public class BehaviorConstructorsSourceGenerator : IIncrementalGenerator
             // No user-written constructor but has [InjectedService] fields: generate from injected services
             return new BehaviorConstructorInfo(
                 classDeclarationSyntax.SyntaxTree.FilePath,
-                classSymbol.ContainingNamespace.ToDisplayString(), classSymbol.Name,
+                classSymbol.ContainingNamespace.ToDisplayString(),
+                className,
+                classDeclarationName,
                 System.Array.Empty<string>(), injectedServices);
         }
 
@@ -135,7 +143,8 @@ public class BehaviorConstructorsSourceGenerator : IIncrementalGenerator
             return new BehaviorConstructorInfo(
                 classDeclarationSyntax.SyntaxTree.FilePath,
                 classSymbol.ContainingNamespace.ToDisplayString(),
-                classSymbol.Name,
+                className,
+                classDeclarationName,
                 System.Array.Empty<string>(),
                 injectedServices,
                 hasConflictingConstructors: true);
@@ -152,7 +161,9 @@ public class BehaviorConstructorsSourceGenerator : IIncrementalGenerator
 
         var info = new BehaviorConstructorInfo(
             classDeclarationSyntax.SyntaxTree.FilePath,
-            classSymbol.ContainingNamespace.ToDisplayString(), classSymbol.Name,
+            classSymbol.ContainingNamespace.ToDisplayString(),
+            className,
+            classDeclarationName,
             classConstructor.Parameters.Select(x => x.Type.ToDisplayString()).ToArray(),
             injectedServices);
         return info;
@@ -185,7 +196,7 @@ public class BehaviorConstructorsSourceGenerator : IIncrementalGenerator
 
         sourceBuilder.AppendLine($"namespace {ctorInfo.NamespaceName}");
         sourceBuilder.StartBlock();
-        sourceBuilder.AppendLine($"partial class {ctorInfo.ClassName}");
+        sourceBuilder.AppendLine($"partial class {ctorInfo.ClassDeclarationName}");
         sourceBuilder.StartBlock();
 
         sourceBuilder.AppendResolveServiceMethod("BehaviorConstructors");
