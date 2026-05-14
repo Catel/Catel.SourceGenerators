@@ -14,13 +14,19 @@ public partial class BehaviorCtorGeneratorTests
     [Test]
     public async Task Generates_Ctors_For_Generic_Behavior_With_Injected_Services()
     {
-        var driver = BuildGenericBehaviorWithInjectedServicesDriver();
+        var (driver, _) = BuildGenericBehaviorWithInjectedServicesDriver();
+        var runResult = driver.GetRunResult();
+        var generatedSource = runResult.Results[0].GeneratedSources[0].SourceText.ToString();
+
+        Assert.That(generatedSource, Does.Contain("partial class MyBehavior<TControl, TSettings>"));
+        Assert.That(generatedSource, Does.Contain("public MyBehavior(MyNamespace.IMyService1 myService1)"));
+        Assert.That(generatedSource, Does.Contain("public MyBehavior()"));
 
         await Verifier.Verify(driver)
             .ScrubAssemblyVersion();
     }
 
-    private GeneratorDriver BuildGenericBehaviorWithInjectedServicesDriver()
+    private (GeneratorDriver Driver, CSharpCompilation Compilation) BuildGenericBehaviorWithInjectedServicesDriver()
     {
         var behaviorSource = @"
 namespace MyNamespace
@@ -72,6 +78,6 @@ namespace Catel.IoC
         var generator = new BehaviorConstructorsSourceGenerator();
 
         var driver = CSharpGeneratorDriver.Create(generator);
-        return driver.RunGenerators(compilation);
+        return (driver.RunGenerators(compilation), compilation);
     }
 }
