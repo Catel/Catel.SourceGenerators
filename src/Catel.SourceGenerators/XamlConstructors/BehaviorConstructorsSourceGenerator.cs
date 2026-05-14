@@ -69,8 +69,7 @@ public class BehaviorConstructorsSourceGenerator : IIncrementalGenerator
         var baseType = classSymbol.BaseType;
         while (baseType is not null)
         {
-            var displayString = baseType.ToDisplayString();
-            if (displayString == "Microsoft.Xaml.Behaviors.Behavior")
+            if (baseType.IsType("Microsoft.Xaml.Behaviors.Behavior"))
             {
                 break;
             }

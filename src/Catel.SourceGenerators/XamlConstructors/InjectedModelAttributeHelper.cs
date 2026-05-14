@@ -15,7 +15,7 @@ internal static class InjectedModelAttributeHelper
                 var hasAttr = false;
                 foreach (var attr in fieldSymbol.GetAttributes())
                 {
-                    if (attr.AttributeClass?.ToDisplayString() == AttributeFullName)
+                    if (attr.AttributeClass?.IsType(AttributeFullName) ?? false)
                     {
                         hasAttr = true;
                         break;
@@ -29,9 +29,8 @@ internal static class InjectedModelAttributeHelper
 
                 var fieldName = fieldSymbol.Name;
                 var parameterName = GetParameterName(fieldName);
-                var typeName = fieldSymbol.Type.ToDisplayString();
                 var isNullable = fieldSymbol.NullableAnnotation == NullableAnnotation.Annotated;
-                var baseTypeName = typeName.TrimEnd('?');
+                var baseTypeName = fieldSymbol.Type.GetFullTypeName();
 
                 return new InjectedModelInfo(fieldName, parameterName, baseTypeName, isNullable);
             }
@@ -41,7 +40,7 @@ internal static class InjectedModelAttributeHelper
                 var hasAttr = false;
                 foreach (var attr in propertySymbol.GetAttributes())
                 {
-                    if (attr.AttributeClass?.ToDisplayString() == AttributeFullName)
+                    if (attr.AttributeClass?.IsType(AttributeFullName) ?? false)
                     {
                         hasAttr = true;
                         break;
@@ -55,9 +54,8 @@ internal static class InjectedModelAttributeHelper
 
                 var propName = propertySymbol.Name;
                 var parameterName = GetParameterName(propName);
-                var typeName = propertySymbol.Type.ToDisplayString();
                 var isNullable = propertySymbol.NullableAnnotation == NullableAnnotation.Annotated;
-                var baseTypeName = typeName.TrimEnd('?');
+                var baseTypeName = propertySymbol.Type.GetFullTypeName();
 
                 return new InjectedModelInfo(propName, parameterName, baseTypeName, isNullable);
             }

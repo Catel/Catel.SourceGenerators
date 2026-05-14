@@ -1,4 +1,4 @@
-namespace Catel.SourceGenerators;
+﻿namespace Catel.SourceGenerators;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -58,7 +58,7 @@ internal static class PartialClassCandidateDetector
         var baseType = classSymbol.BaseType;
         while (baseType is not null)
         {
-            if (GetFullTypeName(baseType) == "Microsoft.Xaml.Behaviors.Behavior")
+            if (baseType.IsType("Microsoft.Xaml.Behaviors.Behavior"))
             {
                 return true;
             }
@@ -75,7 +75,7 @@ internal static class PartialClassCandidateDetector
         var baseType = classSymbol.BaseType;
         while (baseType is not null)
         {
-            var typeName = GetFullTypeName(baseType);
+            var typeName = baseType.GetFullTypeName();
             if (!hasCatelViewBase && CatelViewBaseTypeNames.Contains(typeName))
             {
                 hasCatelViewBase = true;
@@ -90,11 +90,5 @@ internal static class PartialClassCandidateDetector
         }
 
         return false;
-    }
-
-    private static string GetFullTypeName(INamedTypeSymbol typeSymbol)
-    {
-        return typeSymbol.ConstructedFrom.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
-            .Replace("global::", string.Empty);
     }
 }

@@ -21,7 +21,7 @@ internal static class ViewToViewModelAttributeHelper
         var currentType = (INamedTypeSymbol?)classSymbol;
         while (currentType is not null)
         {
-            var displayString = currentType.ToDisplayString();
+            var displayString = currentType.GetFullTypeName();
             if (displayString.StartsWith("Catel.") ||
                 displayString.StartsWith("System.") ||
                 displayString.StartsWith("Microsoft."))
@@ -34,7 +34,7 @@ internal static class ViewToViewModelAttributeHelper
                 if (member is IPropertySymbol propertySymbol)
                 {
                     var hasAttr = propertySymbol.GetAttributes()
-                        .Any(a => a.AttributeClass?.ToDisplayString() == AttributeFullName);
+                        .Any(a => a.AttributeClass?.IsType(AttributeFullName) ?? false);
                     if (hasAttr && IsDependencyProperty(currentType, propertySymbol.Name))
                     {
                         properties.Add(propertySymbol.Name);
@@ -56,7 +56,7 @@ internal static class ViewToViewModelAttributeHelper
         {
             if (member is IFieldSymbol fieldSymbol &&
                 fieldSymbol.IsStatic &&
-                fieldSymbol.Type.ToDisplayString() == DependencyPropertyTypeName)
+                fieldSymbol.Type.IsType(DependencyPropertyTypeName))
             {
                 return true;
             }
@@ -154,7 +154,7 @@ public class ViewConstructorsSourceGenerator : IIncrementalGenerator
         var baseType = classSymbol.BaseType;
         while (baseType is not null)
         {
-            var displayString = baseType.ToDisplayString();
+            var displayString = baseType.GetFullTypeName();
             if (!isCatelView)
             {
                 if (displayString.Contains("Catel.Windows.Controls.UserControl") ||

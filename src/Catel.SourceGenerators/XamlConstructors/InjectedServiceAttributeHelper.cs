@@ -20,7 +20,7 @@ internal static class InjectedServiceAttributeHelper
             }
 
             var hasAttr = fieldSymbol.GetAttributes()
-                .Any(a => a.AttributeClass?.ToDisplayString() == AttributeFullName);
+                .Any(a => a.AttributeClass?.IsType(AttributeFullName) ?? false);
             if (!hasAttr)
             {
                 continue;

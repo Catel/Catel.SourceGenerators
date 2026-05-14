@@ -45,7 +45,7 @@ internal static class INamedTypeSymbolExtensions
         var baseType = classSymbol.BaseType;
         while (baseType is not null)
         {
-            var displayString = baseType.ToDisplayString();
+            var displayString = baseType.GetFullTypeName();
             if (displayString == typeName)
             {
                 return true;
@@ -55,5 +55,16 @@ internal static class INamedTypeSymbolExtensions
         }
 
         return false;
+    }
+
+    public static string GetFullTypeName(this INamedTypeSymbol? typeSymbol)
+    {
+        if (typeSymbol is null)
+        {
+            return string.Empty;
+        }
+
+        return typeSymbol.ConstructedFrom.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
+            .Replace("global::", string.Empty);
     }
 }

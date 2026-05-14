@@ -22,9 +22,25 @@ internal static class ITypeSymbolExtensions
         return false;
     }
 
-    public static bool IsType(this ITypeSymbol typeSymbol, string fullTypeName)
+    public static bool IsType(this ITypeSymbol? typeSymbol, string fullTypeName)
     {
-        var typeName = typeSymbol.ToDisplayString().TrimEnd('?');
+        if (typeSymbol is null)
+        {
+            return false;
+        }
+
+        var typeName = typeSymbol.GetFullTypeName().TrimEnd('?');
         return typeName == fullTypeName;
+    }
+
+    public static string GetFullTypeName(this ITypeSymbol? typeSymbol)
+    {
+        if (typeSymbol is null)
+        {
+            return string.Empty;
+        }
+
+        return typeSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
+            .Replace("global::", string.Empty);
     }
 }
