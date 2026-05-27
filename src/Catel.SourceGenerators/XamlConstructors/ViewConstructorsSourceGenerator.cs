@@ -201,28 +201,42 @@ public class ViewConstructorsSourceGenerator : IIncrementalGenerator
 
                 var ctors = new List<ConstructorInfo>();
 
-                foreach (var baseCtor in baseClassConstructors)
+                if (baseClassConstructors.Length > 0)
                 {
-                    if (baseCtor.Name != ".ctor")
+                    foreach (var baseCtor in baseClassConstructors)
                     {
-                        // Not a ctor
-                        continue;
-                    }
+                        if (baseCtor.Name != ".ctor")
+                        {
+                            // Not a ctor
+                            continue;
+                        }
 
-                    var isViewModelInjectionCtor = baseCtor.Parameters[0].Type.ImplementsInterface("Catel.MVVM.IViewModel");
+                        var isViewModelInjectionCtor = baseCtor.Parameters[0].Type.ImplementsInterface("Catel.MVVM.IViewModel");
 
-                    ctors.Add(new ConstructorInfo(classSymbol.Name,
-                        baseCtor.Parameters.Select(x => new ParameterInfo(x.Name, x.Type.ToDisplayString(), x.IsNullable())).ToArray(),
-                        true,
-                        false));
-
-                    // Only generate empty ctor for non-view model injection ctor
-                    if (!isViewModelInjectionCtor)
-                    {
                         ctors.Add(new ConstructorInfo(classSymbol.Name,
                             baseCtor.Parameters.Select(x => new ParameterInfo(x.Name, x.Type.ToDisplayString(), x.IsNullable())).ToArray(),
-                            false, false));
+                            true,
+                            false));
+
+                        // Only generate empty ctor for non-view model injection ctor
+                        if (!isViewModelInjectionCtor)
+                        {
+                            ctors.Add(new ConstructorInfo(classSymbol.Name,
+                                baseCtor.Parameters.Select(x => new ParameterInfo(x.Name, x.Type.ToDisplayString(), x.IsNullable())).ToArray(),
+                                false, false));
+                        }
                     }
+                }
+                else if (injectedServices.Count > 0)
+                {
+                    ctors.Add(new ConstructorInfo(classSymbol.Name,
+                        System.Array.Empty<ParameterInfo>(),
+                        true,
+                        false));
+                    ctors.Add(new ConstructorInfo(classSymbol.Name,
+                        System.Array.Empty<ParameterInfo>(),
+                        false,
+                        false));
                 }
 
                 return new ViewConstructorsInfo(
