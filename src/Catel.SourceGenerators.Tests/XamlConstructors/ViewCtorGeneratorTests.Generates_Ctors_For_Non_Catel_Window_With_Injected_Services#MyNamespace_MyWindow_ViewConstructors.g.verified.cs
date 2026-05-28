@@ -1,4 +1,4 @@
-﻿//HintName: MyWindow_ViewConstructors.g.cs
+﻿//HintName: MyNamespace_MyWindow_ViewConstructors.g.cs
 using System;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;

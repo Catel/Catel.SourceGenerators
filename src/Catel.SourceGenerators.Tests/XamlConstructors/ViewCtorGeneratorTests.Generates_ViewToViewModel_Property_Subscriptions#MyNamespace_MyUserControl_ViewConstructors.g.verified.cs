@@ -1,4 +1,4 @@
-﻿//HintName: MyUserControl_ViewConstructors.g.cs
+﻿//HintName: MyNamespace_MyUserControl_ViewConstructors.g.cs
 using System;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;

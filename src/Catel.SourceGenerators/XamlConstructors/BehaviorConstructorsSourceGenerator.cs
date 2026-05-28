@@ -259,16 +259,7 @@ public class BehaviorConstructorsSourceGenerator : IIncrementalGenerator
         //            }
         //#endif
 
-        var fileName = ctorInfo.FileName;
-        if (!string.IsNullOrWhiteSpace(fileName))
-        {
-            fileName = fileName.Replace(".xaml.", ".");
-            fileName = System.IO.Path.GetFileNameWithoutExtension(fileName);
-        }
-        else
-        {
-            fileName = ctorInfo.ClassName;
-        }
+        var fileName = Generation.SourceFileNameHelper.GetGeneratedFileName(ctorInfo.NamespaceName, ctorInfo.ClassName);
 
         sourceProductionContext.AddSource($"{fileName}_BehaviorConstructors.g.cs", SourceText.From(sourceBuilder.ToString(), Encoding.UTF8));
     }
