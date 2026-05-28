@@ -1,4 +1,4 @@
-﻿//HintName: MyBehavior_BehaviorConstructors.g.cs
+﻿//HintName: MyNamespace_MyBehavior_BehaviorConstructors.g.cs
 using System;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,7 +8,7 @@ using Catel.IoC;
 
 namespace MyNamespace
 {
-    partial class MyBehavior<TControl, TSettings>
+    partial class MyBehavior
     {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Catel.BehaviorConstructors", "{AssemblyVersion}")]
         private static T GetService<T>()
@@ -27,16 +27,17 @@ namespace MyNamespace
         partial void OnConstructed();
 
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Catel.BehaviorConstructors", "{AssemblyVersion}")]
-        public MyBehavior(MyNamespace.IMyService1 myService1)
+        public MyBehavior(MyNamespace.IMyService1 myService1, MyNamespace.IMyService2 myService2)
         {
             _myService1 = myService1;
+            _myService2 = myService2;
             OnConstructing();
             OnConstructed();
         }
 
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Catel.BehaviorConstructors", "{AssemblyVersion}")]
         public MyBehavior()
-            : this(GetService<MyNamespace.IMyService1>())
+            : this(GetService<MyNamespace.IMyService1>(), GetService<MyNamespace.IMyService2>())
         {
         }
     }

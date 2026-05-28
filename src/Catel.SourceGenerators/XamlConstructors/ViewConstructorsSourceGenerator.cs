@@ -399,16 +399,7 @@ public class ViewConstructorsSourceGenerator : IIncrementalGenerator
         //            }
         //#endif
 
-        var fileName = ctorsInfo.FileName;
-        if (!string.IsNullOrWhiteSpace(fileName))
-        {
-            fileName = fileName.Replace(".xaml.", ".");
-            fileName = System.IO.Path.GetFileNameWithoutExtension(fileName);
-        }
-        else
-        {
-            fileName = ctorsInfo.ClassName;
-        }
+        var fileName = Generation.SourceFileNameHelper.GetGeneratedFileName(ctorsInfo.NamespaceName, ctorsInfo.ClassName);
 
         sourceProductionContext.AddSource($"{fileName}_ViewConstructors.g.cs", SourceText.From(sourceBuilder.ToString(), Encoding.UTF8));
     }

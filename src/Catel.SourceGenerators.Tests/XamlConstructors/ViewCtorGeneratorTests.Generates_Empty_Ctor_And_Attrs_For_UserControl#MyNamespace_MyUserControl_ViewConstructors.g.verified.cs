@@ -1,4 +1,4 @@
-﻿//HintName: MyUserControl_ViewConstructors.g.cs
+﻿//HintName: MyNamespace_MyUserControl_ViewConstructors.g.cs
 using System;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,24 +33,15 @@ namespace MyNamespace
             }
         }
 
-
-        partial void OnInitializingComponent();
-
-        partial void OnInitializedComponent();
-
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Catel.ViewConstructors", "{AssemblyVersion}")]
-        public MyUserControl(MyNamespace.IMyService myService)
-            : base()
+        static MyUserControl()
         {
-            _myService = myService;
-            OnInitializingComponent();
-            InitializeComponent();
-            OnInitializedComponent();
+            InitializeViewPropertyMappings();
         }
 
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Catel.ViewConstructors", "{AssemblyVersion}")]
         public MyUserControl()
-            : this(GetService<MyNamespace.IMyService>())
+            : this(GetService<MyNamespace.ILogger<MyNamespace.MyUserControl>>(), GetService<MyNamespace.IUserControlWrapperService>())
         {
         }
 

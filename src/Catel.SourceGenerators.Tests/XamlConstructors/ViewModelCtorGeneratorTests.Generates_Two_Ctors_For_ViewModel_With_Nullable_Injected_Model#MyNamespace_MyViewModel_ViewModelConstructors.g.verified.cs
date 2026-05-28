@@ -1,4 +1,4 @@
-﻿//HintName: MyViewModel_ViewModelConstructors.g.cs
+﻿//HintName: MyNamespace_MyViewModel_ViewModelConstructors.g.cs
 using System;
 using System.Runtime.CompilerServices;
 
