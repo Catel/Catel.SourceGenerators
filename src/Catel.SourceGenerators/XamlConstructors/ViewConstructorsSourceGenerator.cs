@@ -238,6 +238,15 @@ public class ViewConstructorsSourceGenerator : IIncrementalGenerator
                         false,
                         false));
                 }
+                else
+                {
+                    // Regular view without any specific base calls, simply
+                    // generate empty ctor with OnInitializingComponent and OnInitializedComponent
+                    ctors.Add(new ConstructorInfo(classSymbol.Name,
+                        System.Array.Empty<ParameterInfo>(),
+                        true, // Need to call base to generate InitializeComponent call
+                        true));
+                }
 
                 return new ViewConstructorsInfo(
                     classDeclarationSyntax.SyntaxTree.FilePath,
