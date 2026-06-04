@@ -10,10 +10,11 @@ public readonly record struct MarkupExtensionConstructorInfo
     public readonly EquatableArray<string> ParameterTypeNames;
     public readonly EquatableArray<InjectedServiceInfo> InjectedServices;
     public readonly bool HasConflictingConstructors;
+    public readonly bool GenerateGetServiceOnly;
 
     public MarkupExtensionConstructorInfo(string fileName, string namespaceName, string className,
         IReadOnlyList<string> parameterTypeNames, IReadOnlyList<InjectedServiceInfo> injectedServices,
-        bool hasConflictingConstructors = false)
+        bool hasConflictingConstructors = false, bool generateGetServiceOnly = false)
     {
         FileName = fileName;
         NamespaceName = namespaceName;
@@ -21,6 +22,7 @@ public readonly record struct MarkupExtensionConstructorInfo
         ParameterTypeNames = new(parameterTypeNames);
         InjectedServices = new(injectedServices);
         HasConflictingConstructors = hasConflictingConstructors;
+        GenerateGetServiceOnly = generateGetServiceOnly;
     }
 
     public bool Equals(MarkupExtensionConstructorInfo other)
@@ -29,7 +31,8 @@ public readonly record struct MarkupExtensionConstructorInfo
                ClassName == other.ClassName &&
                ParameterTypeNames == other.ParameterTypeNames &&
                InjectedServices == other.InjectedServices &&
-               HasConflictingConstructors == other.HasConflictingConstructors;
+               HasConflictingConstructors == other.HasConflictingConstructors &&
+               GenerateGetServiceOnly == other.GenerateGetServiceOnly;
     }
 
     public override int GetHashCode()
