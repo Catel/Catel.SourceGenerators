@@ -258,7 +258,15 @@ public class ViewConstructorsSourceGenerator : IIncrementalGenerator
                     injectedServices);
             }
 
-            return null;
+            // Has explicit parameterless ctor; generate GetService<T> + property mappings but no instance ctors
+            return new ViewConstructorsInfo(
+                classDeclarationSyntax.SyntaxTree.FilePath,
+                classSymbol.ContainingNamespace.ToDisplayString(),
+                classSymbol.Name,
+                isCatelView && !classSymbol.HasStaticConstructorWithContent(),
+                System.Array.Empty<ConstructorInfo>(),
+                viewToViewModelProperties,
+                injectedServices);
         }
 
         // TODO: Figure out how to filter the right constructor with the view model

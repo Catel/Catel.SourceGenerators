@@ -81,8 +81,18 @@ public class ValueConverterConstructorsSourceGenerator : IIncrementalGenerator
         var emptyClassConstructor = classSymbol.Constructors.FirstOrDefault(x => !x.IsStatic && x.Parameters.Length == 0);
         if (emptyClassConstructor is not null)
         {
-            // Has parameterless ctor already
-            return null;
+            // Has parameterless ctor already; generate GetService only for partial classes
+            if (!classDeclarationSyntax.IsPartialType())
+            {
+                return null;
+            }
+
+            return new ValueConverterConstructorInfo(
+                classDeclarationSyntax.SyntaxTree.FilePath,
+                classSymbol.ContainingNamespace.ToDisplayString(),
+                classSymbol.Name,
+                System.Array.Empty<string>(),
+                generateGetServiceOnly: true);
         }
 
         // Note: instead of using the *class* to get the ctors, we use the node. This is important since
@@ -100,7 +110,18 @@ public class ValueConverterConstructorsSourceGenerator : IIncrementalGenerator
             .ToArray();
         if (constructors.Length == 0 || constructors.Length > 1)
         {
-            return null;
+            // Cannot generate DI wrapper; generate GetService only for partial classes
+            if (!classDeclarationSyntax.IsPartialType())
+            {
+                return null;
+            }
+
+            return new ValueConverterConstructorInfo(
+                classDeclarationSyntax.SyntaxTree.FilePath,
+                classSymbol.ContainingNamespace.ToDisplayString(),
+                classSymbol.Name,
+                System.Array.Empty<string>(),
+                generateGetServiceOnly: true);
         }
 
         var classConstructor = classSymbol.InstanceConstructors
@@ -139,15 +160,18 @@ public class ValueConverterConstructorsSourceGenerator : IIncrementalGenerator
 
         sourceBuilder.AppendResolveServiceMethod("ValueConverterConstructors");
 
-        // Generate empty constructor
-        sourceBuilder.AppendGeneratedCodeAttribute("ValueConverterConstructors");
-        sourceBuilder.AppendLine($"public {ctorInfo.ClassName}()");
-        sourceBuilder.Append("    : this(");
-        sourceBuilder.Append(string.Join(", ", ctorInfo.ParameterTypeNames.Select(p =>
-            $"GetService<{p}>()")));
-        sourceBuilder.AppendLine(")");
-        sourceBuilder.StartBlock();
-        sourceBuilder.EndBlock();
+        if (!ctorInfo.GenerateGetServiceOnly)
+        {
+            // Generate empty constructor
+            sourceBuilder.AppendGeneratedCodeAttribute("ValueConverterConstructors");
+            sourceBuilder.AppendLine($"public {ctorInfo.ClassName}()");
+            sourceBuilder.Append("    : this(");
+            sourceBuilder.Append(string.Join(", ", ctorInfo.ParameterTypeNames.Select(p =>
+                $"GetService<{p}>()")));
+            sourceBuilder.AppendLine(")");
+            sourceBuilder.StartBlock();
+            sourceBuilder.EndBlock();
+        }
 
         sourceBuilder.EndBlock();
         sourceBuilder.EndBlock();

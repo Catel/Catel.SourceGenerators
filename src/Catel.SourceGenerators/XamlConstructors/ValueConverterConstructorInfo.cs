@@ -8,20 +8,23 @@ public readonly record struct ValueConverterConstructorInfo
     public readonly string NamespaceName;
     public readonly string ClassName;
     public readonly EquatableArray<string> ParameterTypeNames;
+    public readonly bool GenerateGetServiceOnly;
 
-    public ValueConverterConstructorInfo(string fileName, string namespaceName, string className, IReadOnlyList<string> parameterTypeNames)
+    public ValueConverterConstructorInfo(string fileName, string namespaceName, string className, IReadOnlyList<string> parameterTypeNames, bool generateGetServiceOnly = false)
     {
         FileName = fileName;
         NamespaceName = namespaceName;
         ClassName = className;
         ParameterTypeNames = new(parameterTypeNames);
+        GenerateGetServiceOnly = generateGetServiceOnly;
     }
 
-    public bool Equals(BehaviorConstructorInfo other)
+    public bool Equals(ValueConverterConstructorInfo other)
     {
         return NamespaceName == other.NamespaceName &&
                ClassName == other.ClassName &&
-               ParameterTypeNames == other.ParameterTypeNames;
+               ParameterTypeNames == other.ParameterTypeNames &&
+               GenerateGetServiceOnly == other.GenerateGetServiceOnly;
     }
 
     public override int GetHashCode()
