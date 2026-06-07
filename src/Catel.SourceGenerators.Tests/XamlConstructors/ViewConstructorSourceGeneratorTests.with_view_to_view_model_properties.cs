@@ -27,6 +27,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Catel.IoC;
 using Catel.MVVM;
+using Catel.MVVM.Views;
 
 namespace MyNamespace
 {
@@ -45,7 +46,7 @@ namespace MyNamespace
         public static readonly DependencyProperty CountProperty =
             DependencyProperty.Register(nameof(Count), typeof(int), typeof(MyUserControl));
 
-        [ViewToViewModel]
+        [ViewToViewModel(MappingType = ViewToViewModelMappingType.ViewToViewModel)]
         public int Count
         {
             get => (int)GetValue(CountProperty);
@@ -87,10 +88,44 @@ namespace Catel.MVVM
     public interface IViewModel
     {
     }
+}
 
+namespace Catel.MVVM.Views
+{
     [System.AttributeUsage(System.AttributeTargets.Property)]
     public class ViewToViewModelAttribute : System.Attribute
     {
+        public ViewToViewModelAttribute(string viewModelPropertyName = "")
+        {
+            MappingType = ViewToViewModelMappingType.TwoWayViewModelWins;
+
+            ViewModelPropertyName = viewModelPropertyName;
+        }
+
+        /// <summary>
+        /// Gets or sets the view model property name.
+        /// </summary>
+        /// <value>The view model property name.</value>
+        public string ViewModelPropertyName { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the type of the mapping.
+        /// </summary>
+        /// <value>The type of the mapping.</value>
+        public ViewToViewModelMappingType MappingType { get; set; }
+    }
+
+    public enum ViewToViewModelMappingType
+    {
+        TwoWayDoNothing,
+
+        TwoWayViewWins,
+
+        TwoWayViewModelWins,
+
+        ViewToViewModel,
+
+        ViewModelToView
     }
 }
 

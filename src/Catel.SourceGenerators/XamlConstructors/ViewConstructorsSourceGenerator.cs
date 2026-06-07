@@ -11,7 +11,7 @@ using Microsoft.CodeAnalysis.Text;
 
 internal static class ViewToViewModelAttributeHelper
 {
-    internal const string AttributeFullName = "Catel.MVVM.ViewToViewModelAttribute";
+    internal const string AttributeFullName = "Catel.MVVM.Views.ViewToViewModelAttribute";
     private const string DependencyPropertyTypeName = "System.Windows.DependencyProperty";
 
     internal static List<string> GetViewToViewModelProperties(INamedTypeSymbol classSymbol)
