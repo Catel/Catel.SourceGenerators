@@ -5,7 +5,7 @@
     <RootNamespace>Catel.SourceGenerators</RootNamespace>
     <DefaultLanguage>en-US</DefaultLanguage>
     <PackageId>Catel.SourceGenerators</PackageId>
-    <PackageVersion>1.0.0-alpha0029</PackageVersion>
+    <PackageVersion>7.1.0-alpha0080</PackageVersion>
     <Description>Roslyn SourceGenerators for Catel.</Description>
     <DevelopmentDependency>true</DevelopmentDependency>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
