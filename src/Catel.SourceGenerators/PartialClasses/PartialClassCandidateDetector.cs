@@ -1,8 +1,9 @@
 ﻿namespace Catel.SourceGenerators;
 
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Generic;
 
 internal static class PartialClassCandidateDetector
 {
@@ -48,6 +49,11 @@ internal static class PartialClassCandidateDetector
             IsView(classSymbol))
         {
             return "view";
+        }
+
+        if (classSymbol.GetAttributes().Any(a => a.AttributeClass?.IsType(XamlConstructors.GenerateEmptyConstructorSourceGenerator.AttributeFullName) ?? false))
+        {
+            return "class";
         }
 
         return null;
