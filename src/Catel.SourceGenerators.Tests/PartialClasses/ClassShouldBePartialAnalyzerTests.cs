@@ -29,6 +29,7 @@ public class ClassShouldBePartialAnalyzerTests
     [TestCase("public class MyMarkupExtension : System.Windows.Markup.MarkupExtension { }", "MyMarkupExtension", "markup extension")]
     [TestCase("public class MyUserControl : Catel.Windows.Controls.UserControl { }", "MyUserControl", "view")]
     [TestCase("public class MyWindow : Catel.Windows.Window { }", "MyWindow", "view")]
+    [TestCase("[Catel.GenerateEmptyConstructor] public class MyClass { }", "MyClass", "class")]
     public async Task Reports_Diagnostic_For_Supported_Class_Without_Partial(string classSource, string className, string supportedTypeDescription)
     {
         var diagnostics = await GetDiagnosticsAsync(WrapInSource(classSource));
@@ -65,6 +66,18 @@ public class ClassShouldBePartialAnalyzerTests
         Assert.That(diagnostics, Is.Empty);
     }
 
+    [Test]
+    public async Task Does_Not_Report_Diagnostic_For_Partial_Class_With_GenerateEmptyConstructor_Attribute()
+    {
+        var diagnostics = await GetDiagnosticsAsync(WrapInSource(
+            "[Catel.GenerateEmptyConstructor] public partial class MyClass { }"));
+
+        Assert.That(diagnostics, Is.Empty);
+    }
+
+    [TestCase(
+        "[Catel.GenerateEmptyConstructor] public class MyClass { }",
+        "[Catel.GenerateEmptyConstructor] public partial class MyClass { }")]
     [TestCase(
         "public class MyViewModel : Catel.MVVM.ViewModelBase { }",
         "public partial class MyViewModel : Catel.MVVM.ViewModelBase { }")]
@@ -215,6 +228,12 @@ namespace Catel.Windows
     public class Window : System.Windows.Window
     {
     }
+}
+
+namespace Catel
+{
+    [System.AttributeUsage(System.AttributeTargets.Class)]
+    internal sealed class GenerateEmptyConstructorAttribute : System.Attribute { }
 }
 
 namespace TestNamespace
