@@ -8,7 +8,9 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
+#pragma warning disable RS1038 // Compiler extensions should be implemented in assemblies with compiler-provided references
 [Generator]
+#pragma warning restore RS1038 // Compiler extensions should be implemented in assemblies with compiler-provided references
 public class ValueConverterConstructorsSourceGenerator : IIncrementalGenerator
 {
     //private bool _isIoCContainerAvailable = false;

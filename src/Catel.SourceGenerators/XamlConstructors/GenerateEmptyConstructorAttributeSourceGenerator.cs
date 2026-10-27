@@ -1,10 +1,12 @@
-namespace Catel.SourceGenerators.XamlConstructors;
+﻿namespace Catel.SourceGenerators.XamlConstructors;
 
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 
+#pragma warning disable RS1038 // Compiler extensions should be implemented in assemblies with compiler-provided references
 [Generator]
+#pragma warning restore RS1038 // Compiler extensions should be implemented in assemblies with compiler-provided references
 public class GenerateEmptyConstructorAttributeSourceGenerator : IIncrementalGenerator
 {
     private const string AttributeSource = """

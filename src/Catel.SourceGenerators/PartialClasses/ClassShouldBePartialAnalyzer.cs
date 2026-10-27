@@ -1,11 +1,13 @@
-namespace Catel.SourceGenerators;
+﻿namespace Catel.SourceGenerators;
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
+#pragma warning disable RS1038 // Compiler extensions should be implemented in assemblies with compiler-provided references
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
+#pragma warning restore RS1038 // Compiler extensions should be implemented in assemblies with compiler-provided references
 public class ClassShouldBePartialAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
