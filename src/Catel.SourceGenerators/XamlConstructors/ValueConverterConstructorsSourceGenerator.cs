@@ -1,5 +1,6 @@
 ﻿namespace Catel.SourceGenerators.XamlConstructors;
 
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -36,8 +37,17 @@ public class ValueConverterConstructorsSourceGenerator : IIncrementalGenerator
             })
             .Where(static m => m is not null);
 
-        context.RegisterSourceOutput(constructorsToGenerate,
-            static (spc, source) => Execute(spc, source));
+        var collected = constructorsToGenerate.Collect()
+            .Select((infos, _) => infos.Distinct().ToImmutableArray());
+
+        context.RegisterSourceOutput(collected,
+            static (spc, sources) =>
+            {
+                foreach (var source in sources)
+                {
+                    Execute(spc, source);
+                }
+            });
     }
 
     private static bool IsSyntaxTargetForGeneration(SyntaxNode node)
@@ -76,6 +86,25 @@ public class ValueConverterConstructorsSourceGenerator : IIncrementalGenerator
         if (classSymbol.DerivesFromBaseClass("System.Windows.Markup.MarkupExtension"))
         {
             return null;
+        }
+
+        var injectedServices = InjectedServiceAttributeHelper.GetInjectedServiceFields(classSymbol);
+        if (injectedServices.Count > 0)
+        {
+            if (!classDeclarationSyntax.IsPartialType())
+            {
+                return null;
+            }
+
+            var hasExplicitConstructors = classSymbol.InstanceConstructors.Any(c => !c.IsImplicitlyDeclared);
+            return new ValueConverterConstructorInfo(
+                classDeclarationSyntax.SyntaxTree.FilePath,
+                classSymbol.ContainingNamespace.ToDisplayString(),
+                classSymbol.Name,
+                classSymbol.GetClassDeclarationName(),
+                InjectedServiceConstructorHelper.GetBaseParameters(classSymbol, semanticModel.Compilation),
+                injectedServices,
+                hasExplicitConstructors);
         }
 
         var emptyClassConstructor = classSymbol.Constructors.FirstOrDefault(x => !x.IsStatic && x.Parameters.Length == 0);
@@ -144,6 +173,13 @@ public class ValueConverterConstructorsSourceGenerator : IIncrementalGenerator
 
         var ctorInfo = constructorInfo.Value;
 
+        if (ctorInfo.HasConflictingConstructors)
+        {
+            sourceProductionContext.ReportDiagnostic(
+                Diagnostic.Create(Diagnostics.ConflictingConstructorsAndInjectedService, Location.None));
+            return;
+        }
+
         var sourceBuilder = new IndentedStringBuilder();
         sourceBuilder.AppendLine("using System;");
         sourceBuilder.AppendLine("using System.Runtime.CompilerServices;");
@@ -155,12 +191,17 @@ public class ValueConverterConstructorsSourceGenerator : IIncrementalGenerator
 
         sourceBuilder.AppendLine($"namespace {ctorInfo.NamespaceName}");
         sourceBuilder.StartBlock();
-        sourceBuilder.AppendLine($"partial class {ctorInfo.ClassName}");
+        sourceBuilder.AppendLine($"partial class {ctorInfo.ClassDeclarationName ?? ctorInfo.ClassName}");
         sourceBuilder.StartBlock();
 
         sourceBuilder.AppendResolveServiceMethod("ValueConverterConstructors");
 
-        if (!ctorInfo.GenerateGetServiceOnly)
+        if (ctorInfo.InjectedServices.Count > 0)
+        {
+            InjectedServiceConstructorHelper.AppendConstructors(sourceBuilder, "ValueConverterConstructors",
+                ctorInfo.ClassName, ctorInfo.BaseParameters, ctorInfo.InjectedServices);
+        }
+        else if (!ctorInfo.GenerateGetServiceOnly)
         {
             // Generate empty constructor
             sourceBuilder.AppendGeneratedCodeAttribute("ValueConverterConstructors");

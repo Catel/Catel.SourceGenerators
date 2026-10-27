@@ -21,10 +21,15 @@ public class InjectedServiceConstructorTests
     [TestCase("GenerateEmptyConstructor", "_languageService")]
     [TestCase("GenerateEmptyConstructor", "_localLanguageService")]
     [TestCase("GenerateEmptyConstructor", "languageService")]
+    [TestCase("ValueConverter", "_languageService")]
+    [TestCase("ValueConverter", "_localLanguageService")]
+    [TestCase("MultiValueConverter", "languageService")]
     public void Reuses_Base_Service_And_Resolves_It_Only_Once(string generatorKind, string fieldName)
     {
         var rootType = generatorKind == "Behavior" ? "Microsoft.Xaml.Behaviors.Behavior"
-            : generatorKind == "MarkupExtension" ? "System.Windows.Markup.MarkupExtension" : "object";
+            : generatorKind == "MarkupExtension" ? "System.Windows.Markup.MarkupExtension"
+            : generatorKind == "ValueConverter" ? "System.Windows.Data.IValueConverter"
+            : generatorKind == "MultiValueConverter" ? "System.Windows.Data.IMultiValueConverter" : "object";
         var attribute = generatorKind == "GenerateEmptyConstructor" ? "[Catel.GenerateEmptyConstructor]" : string.Empty;
         var source = $@"
 namespace MyNamespace
@@ -46,6 +51,7 @@ namespace MyNamespace
 }}";
         IIncrementalGenerator generator = generatorKind == "Behavior" ? new BehaviorConstructorsSourceGenerator()
             : generatorKind == "MarkupExtension" ? new MarkupExtensionConstructorsSourceGenerator()
+            : generatorKind.EndsWith("ValueConverter") ? new ValueConverterConstructorsSourceGenerator()
             : new GenerateEmptyConstructorSourceGenerator();
 
         var output = Generate(source, generator);
@@ -67,10 +73,12 @@ namespace MyNamespace
     [TestCase("Behavior")]
     [TestCase("MarkupExtension")]
     [TestCase("GenerateEmptyConstructor")]
+    [TestCase("ValueConverter")]
     public void Preserves_Optional_Base_Parameter_Default(string generatorKind)
     {
         var rootType = generatorKind == "Behavior" ? "Microsoft.Xaml.Behaviors.Behavior"
-            : generatorKind == "MarkupExtension" ? "System.Windows.Markup.MarkupExtension" : "object";
+            : generatorKind == "MarkupExtension" ? "System.Windows.Markup.MarkupExtension"
+            : generatorKind == "ValueConverter" ? "System.Windows.Data.IValueConverter" : "object";
         var attribute = generatorKind == "GenerateEmptyConstructor" ? "[Catel.GenerateEmptyConstructor]" : string.Empty;
         var source = $@"
 namespace MyNamespace
@@ -87,6 +95,7 @@ namespace MyNamespace
 }}";
         IIncrementalGenerator generator = generatorKind == "Behavior" ? new BehaviorConstructorsSourceGenerator()
             : generatorKind == "MarkupExtension" ? new MarkupExtensionConstructorsSourceGenerator()
+            : generatorKind == "ValueConverter" ? new ValueConverterConstructorsSourceGenerator()
             : new GenerateEmptyConstructorSourceGenerator();
 
         var output = Generate(source, generator);
@@ -100,10 +109,12 @@ namespace MyNamespace
     [TestCase("Behavior")]
     [TestCase("MarkupExtension")]
     [TestCase("GenerateEmptyConstructor")]
+    [TestCase("ValueConverter")]
     public void Preserves_Parameterless_Base_Constructor(string generatorKind)
     {
         var rootType = generatorKind == "Behavior" ? "Microsoft.Xaml.Behaviors.Behavior"
-            : generatorKind == "MarkupExtension" ? "System.Windows.Markup.MarkupExtension" : "object";
+            : generatorKind == "MarkupExtension" ? "System.Windows.Markup.MarkupExtension"
+            : generatorKind == "ValueConverter" ? "System.Windows.Data.IValueConverter" : "object";
         var attribute = generatorKind == "GenerateEmptyConstructor" ? "[Catel.GenerateEmptyConstructor]" : string.Empty;
         var source = $@"
 namespace MyNamespace
@@ -121,6 +132,7 @@ namespace MyNamespace
 }}";
         IIncrementalGenerator generator = generatorKind == "Behavior" ? new BehaviorConstructorsSourceGenerator()
             : generatorKind == "MarkupExtension" ? new MarkupExtensionConstructorsSourceGenerator()
+            : generatorKind == "ValueConverter" ? new ValueConverterConstructorsSourceGenerator()
             : new GenerateEmptyConstructorSourceGenerator();
 
         var output = Generate(source, generator);
@@ -162,6 +174,11 @@ namespace Catel
 }
 namespace Microsoft.Xaml.Behaviors { public abstract class Behavior { } }
 namespace System.Windows.Markup { public abstract class MarkupExtension { } }
+namespace System.Windows.Data
+{
+    public interface IValueConverter { }
+    public interface IMultiValueConverter { }
+}
 namespace Catel.MVVM
 {
     public abstract class ViewModelBase
