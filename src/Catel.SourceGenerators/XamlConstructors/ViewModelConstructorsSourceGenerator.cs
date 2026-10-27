@@ -177,7 +177,10 @@ public class ViewModelConstructorsSourceGenerator : IIncrementalGenerator
 
         foreach (var service in ctorInfo.InjectedServices)
         {
-            parameters.Add($"{service.TypeName} {service.ParameterName}");
+            if (service.TypeName != "System.IServiceProvider")
+            {
+                parameters.Add($"{service.TypeName} {service.ParameterName}");
+            }
         }
 
         sourceBuilder.AppendGeneratedCodeAttribute("ViewModelConstructors");
@@ -192,7 +195,8 @@ public class ViewModelConstructorsSourceGenerator : IIncrementalGenerator
 
         foreach (var service in ctorInfo.InjectedServices)
         {
-            sourceBuilder.AppendLine($"{service.FieldName} = {service.ParameterName};");
+            var parameterName = service.TypeName == "System.IServiceProvider" ? "serviceProvider" : service.ParameterName;
+            sourceBuilder.AppendLine($"{service.FieldName} = {parameterName};");
         }
 
         sourceBuilder.AppendLine("OnConstructing();");

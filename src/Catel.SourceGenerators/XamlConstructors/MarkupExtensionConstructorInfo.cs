@@ -12,6 +12,16 @@ public readonly record struct MarkupExtensionConstructorInfo
     public readonly bool HasConflictingConstructors;
     public readonly bool GenerateGetServiceOnly;
 
+    internal readonly EquatableArray<ParameterInfo> BaseParameters;
+
+    internal MarkupExtensionConstructorInfo(string fileName, string namespaceName, string className,
+        IReadOnlyList<string> parameterTypeNames, IReadOnlyList<InjectedServiceInfo> injectedServices,
+        IReadOnlyList<ParameterInfo> baseParameters)
+        : this(fileName, namespaceName, className, parameterTypeNames, injectedServices)
+    {
+        BaseParameters = new(baseParameters);
+    }
+
     public MarkupExtensionConstructorInfo(string fileName, string namespaceName, string className,
         IReadOnlyList<string> parameterTypeNames, IReadOnlyList<InjectedServiceInfo> injectedServices,
         bool hasConflictingConstructors = false, bool generateGetServiceOnly = false)
@@ -30,6 +40,7 @@ public readonly record struct MarkupExtensionConstructorInfo
         return NamespaceName == other.NamespaceName &&
                ClassName == other.ClassName &&
                ParameterTypeNames == other.ParameterTypeNames &&
+               BaseParameters == other.BaseParameters &&
                InjectedServices == other.InjectedServices &&
                HasConflictingConstructors == other.HasConflictingConstructors &&
                GenerateGetServiceOnly == other.GenerateGetServiceOnly;
