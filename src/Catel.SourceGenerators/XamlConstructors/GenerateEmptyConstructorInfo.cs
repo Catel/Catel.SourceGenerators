@@ -13,6 +13,16 @@ public readonly record struct GenerateEmptyConstructorInfo
     public readonly bool HasConflictingConstructors;
     public readonly bool GenerateGetServiceOnly;
 
+    internal readonly EquatableArray<ParameterInfo> BaseParameters;
+
+    internal GenerateEmptyConstructorInfo(string fileName, string namespaceName, string className, string classDeclarationName,
+        IReadOnlyList<string> parameterTypeNames, IReadOnlyList<InjectedServiceInfo> injectedServices,
+        IReadOnlyList<ParameterInfo> baseParameters)
+        : this(fileName, namespaceName, className, classDeclarationName, parameterTypeNames, injectedServices)
+    {
+        BaseParameters = new(baseParameters);
+    }
+
     public GenerateEmptyConstructorInfo(string fileName, string namespaceName, string className, string classDeclarationName,
         IReadOnlyList<string> parameterTypeNames, IReadOnlyList<InjectedServiceInfo> injectedServices,
         bool hasConflictingConstructors = false, bool generateGetServiceOnly = false)
@@ -33,6 +43,7 @@ public readonly record struct GenerateEmptyConstructorInfo
                ClassName == other.ClassName &&
                ClassDeclarationName == other.ClassDeclarationName &&
                ParameterTypeNames == other.ParameterTypeNames &&
+               BaseParameters == other.BaseParameters &&
                InjectedServices == other.InjectedServices &&
                HasConflictingConstructors == other.HasConflictingConstructors &&
                GenerateGetServiceOnly == other.GenerateGetServiceOnly;

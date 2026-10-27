@@ -134,7 +134,8 @@ public class MarkupExtensionConstructorsSourceGenerator : IIncrementalGenerator
             return new MarkupExtensionConstructorInfo(
                 classDeclarationSyntax.SyntaxTree.FilePath,
                 classSymbol.ContainingNamespace.ToDisplayString(), classSymbol.Name,
-                System.Array.Empty<string>(), injectedServices);
+                System.Array.Empty<string>(), injectedServices,
+                InjectedServiceConstructorHelper.GetBaseParameters(classSymbol, semanticModel.Compilation));
         }
 
         if (injectedServices.Count > 0)
@@ -208,33 +209,8 @@ public class MarkupExtensionConstructorsSourceGenerator : IIncrementalGenerator
         {
             if (ctorInfo.ParameterTypeNames.Count == 0 && ctorInfo.InjectedServices.Count > 0)
             {
-                // No user-written constructor: generate DI ctor + empty ctor from injected services
-                sourceBuilder.AppendLine("partial void OnConstructing();");
-                sourceBuilder.AppendLine();
-                sourceBuilder.AppendLine("partial void OnConstructed();");
-                sourceBuilder.AppendLine();
-
-                sourceBuilder.AppendGeneratedCodeAttribute("MarkupExtensionConstructors");
-                sourceBuilder.AppendLine($"public {ctorInfo.ClassName}({string.Join(", ", ctorInfo.InjectedServices.Select(s => $"{s.TypeName} {s.ParameterName}"))})");
-                sourceBuilder.StartBlock();
-                foreach (var service in ctorInfo.InjectedServices)
-                {
-                    sourceBuilder.AppendLine($"{service.FieldName} = {service.ParameterName};");
-                }
-                sourceBuilder.AppendLine("OnConstructing();");
-                sourceBuilder.AppendLine("OnConstructed();");
-                sourceBuilder.EndBlock();
-
-                sourceBuilder.AppendLine();
-
-                sourceBuilder.AppendGeneratedCodeAttribute("MarkupExtensionConstructors");
-                sourceBuilder.AppendLine($"public {ctorInfo.ClassName}()");
-                sourceBuilder.Append("    : this(");
-                sourceBuilder.Append(string.Join(", ", ctorInfo.InjectedServices.Select(s =>
-                    $"GetService<{s.TypeName}>()")));
-                sourceBuilder.AppendLine(")");
-                sourceBuilder.StartBlock();
-                sourceBuilder.EndBlock();
+                InjectedServiceConstructorHelper.AppendConstructors(sourceBuilder, "MarkupExtensionConstructors",
+                    ctorInfo.ClassName, ctorInfo.BaseParameters, ctorInfo.InjectedServices);
             }
             else
             {

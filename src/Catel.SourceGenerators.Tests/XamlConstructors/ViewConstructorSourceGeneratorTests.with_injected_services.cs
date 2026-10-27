@@ -3,6 +3,7 @@
 using Catel.SourceGenerators.XamlConstructors;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NUnit.Framework;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,7 +21,59 @@ public partial class ViewCtorGeneratorTests
             .ScrubAssemblyVersion();
     }
 
-    private GeneratorDriver BuildViewWithInjectedServicesDriver()
+    [TestCase("IUserControlWrapperService", "_userControlWrapperService", "userControlWrapperService")]
+    [TestCase("IUserControlWrapperService", "_wrapperService", "userControlWrapperService")]
+    [TestCase("ILogger<MyUserControl>", "_logger", "logger")]
+    [TestCase("ILogger<MyUserControl>", "_viewLogger", "logger")]
+    public void Reuses_Base_Constructor_Parameter_For_Injected_Service(string serviceType, string fieldName, string parameterName)
+    {
+        var driver = BuildViewWithInjectedServicesDriver($@"
+        [Catel.InjectedService]
+        private readonly {serviceType} {fieldName};");
+
+        var generatedTree = driver.GetRunResult().GeneratedTrees.Single();
+        var constructors = generatedTree.GetRoot().DescendantNodes().OfType<ConstructorDeclarationSyntax>()
+            .Where(x => !x.Modifiers.Any(SyntaxKind.StaticKeyword)).ToArray();
+        var injectingConstructor = constructors.Single(x => x.ParameterList.Parameters.Count > 0);
+        var emptyConstructor = constructors.Single(x => x.ParameterList.Parameters.Count == 0);
+
+        Assert.That(injectingConstructor.ParameterList.Parameters.Select(x => x.Identifier.Text),
+            Is.EqualTo(new[] { "logger", "userControlWrapperService", "myService1", "myService2" }));
+        Assert.That(injectingConstructor.Initializer!.ArgumentList.Arguments.Select(x => x.ToString()),
+            Is.EqualTo(new[] { "logger", "userControlWrapperService" }));
+        Assert.That(injectingConstructor.Body!.Statements.Select(x => x.ToString()),
+            Does.Contain($"{fieldName} = {parameterName};"));
+        Assert.That(emptyConstructor.Initializer!.ArgumentList.Arguments.Select(x => x.ToString()),
+            Is.EqualTo(new[]
+            {
+                "GetService<MyNamespace.ILogger<MyNamespace.MyUserControl>>()",
+                "GetService<MyNamespace.IUserControlWrapperService>()",
+                "GetService<MyNamespace.IMyService1>()",
+                "GetService<MyNamespace.IMyService2>()"
+            }));
+    }
+
+    [Test]
+    public void Reuses_Base_Constructor_Parameter_For_Multiple_Injected_Fields()
+    {
+        var driver = BuildViewWithInjectedServicesDriver(@"
+        [Catel.InjectedService]
+        private readonly IUserControlWrapperService _wrapperService;
+
+        [Catel.InjectedService]
+        private readonly IUserControlWrapperService _otherWrapperService;");
+
+        var generatedTree = driver.GetRunResult().GeneratedTrees.Single();
+        var constructor = generatedTree.GetRoot().DescendantNodes().OfType<ConstructorDeclarationSyntax>()
+            .Single(x => x.ParameterList.Parameters.Count > 0);
+
+        Assert.That(constructor.ParameterList.Parameters.Count, Is.EqualTo(4));
+        Assert.That(constructor.Body!.Statements.Select(x => x.ToString()),
+            Does.Contain("_wrapperService = userControlWrapperService;")
+                .And.Contain("_otherWrapperService = userControlWrapperService;"));
+    }
+
+    private GeneratorDriver BuildViewWithInjectedServicesDriver(string additionalInjectedFields = "")
     {
         var userControlSource = @"
 using Catel.IoC;
@@ -95,7 +148,8 @@ namespace Catel.IoC
         var compilation = CSharpCompilation.Create("name", new[]
         {
             userControlSource,
-            stubSource
+            stubSource,
+            "namespace MyNamespace { public partial class MyUserControl { " + additionalInjectedFields + " } }"
         }.Select(x => CSharpSyntaxTree.ParseText(x)));
 
         var generator = new ViewConstructorsSourceGenerator();

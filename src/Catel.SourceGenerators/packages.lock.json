@@ -62,12 +62,6 @@
         "resolved": "4.15.0",
         "contentHash": "WbZpZI/gmrmTcb8JnP8poJBD4V6hJs2RRIQAmNxQ763t7RktZ/d6xxuU08XAd4K6SpnF0Bm02ADqL2wZ0CNIQA=="
       },
-      "SourceLink.Copy.PdbFiles": {
-        "type": "Direct",
-        "requested": "[2.8.3, )",
-        "resolved": "2.8.3",
-        "contentHash": "cxlw1QHd/J7lOtSZ45VZMOsF/YSOlwZy0fCkauo9Ib9vOv+zGzjm9q3D8qGyMII0Zz1GSmli/oxhmUNuYUpc1g=="
-      },
       "WpfAnalyzers": {
         "type": "Direct",
         "requested": "[4.1.1, )",

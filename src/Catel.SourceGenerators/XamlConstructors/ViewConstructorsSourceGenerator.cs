@@ -353,6 +353,10 @@ public class ViewConstructorsSourceGenerator : IIncrementalGenerator
 
         foreach (var ctorInfo in ctorsInfo.Constructors)
         {
+            var additionalInjectedServices = ctorsInfo.InjectedServices
+                .Where(s => !ctorInfo.Parameters.Any(p => p.ParameterTypeName == s.TypeName))
+                .ToArray();
+
             if (ctorInfo.CallBase)
             {
                 if (!hasGeneratedPartialMethods)
@@ -374,7 +378,7 @@ public class ViewConstructorsSourceGenerator : IIncrementalGenerator
 
                 // Combine base parameters with injected service parameters
                 var allParams = ctorInfo.Parameters.Select(p => $"{p.ParameterTypeName} {p.Name}")
-                    .Concat(ctorsInfo.InjectedServices.Select(s => $"{s.TypeName} {s.ParameterName}"));
+                    .Concat(additionalInjectedServices.Select(s => $"{s.TypeName} {s.ParameterName}"));
                 sourceBuilder.AppendLine($"public {ctorsInfo.ClassName}({string.Join(", ", allParams)})");
                 sourceBuilder.Append("    : base(");
                 sourceBuilder.Append(string.Join(", ", ctorInfo.Parameters.Select(p => p.Name)));
@@ -382,7 +386,9 @@ public class ViewConstructorsSourceGenerator : IIncrementalGenerator
                 sourceBuilder.StartBlock();
                 foreach (var service in ctorsInfo.InjectedServices)
                 {
-                    sourceBuilder.AppendLine($"{service.FieldName} = {service.ParameterName};");
+                    var parameterName = ctorInfo.Parameters
+                        .FirstOrDefault(p => p.ParameterTypeName == service.TypeName).Name ?? service.ParameterName;
+                    sourceBuilder.AppendLine($"{service.FieldName} = {parameterName};");
                 }
                 sourceBuilder.AppendLine("OnInitializingComponent();");
                 sourceBuilder.AppendLine("InitializeComponent();");
@@ -395,7 +401,7 @@ public class ViewConstructorsSourceGenerator : IIncrementalGenerator
                 sourceBuilder.AppendGeneratedCodeAttribute("ViewConstructors");
                 sourceBuilder.AppendLine($"public {ctorsInfo.ClassName}()");
                 var allServiceCalls = ctorInfo.Parameters.Select(p => $"GetService<{p.ParameterTypeName}>()")
-                    .Concat(ctorsInfo.InjectedServices.Select(s => $"GetService<{s.TypeName}>()"));
+                    .Concat(additionalInjectedServices.Select(s => $"GetService<{s.TypeName}>()"));
                 sourceBuilder.Append("    : this(");
                 sourceBuilder.Append(string.Join(", ", allServiceCalls));
                 sourceBuilder.AppendLine(")");
